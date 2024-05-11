@@ -96,6 +96,14 @@ namespace wut_go_mcts
             return !(a == b);
         }
 
+        public Bitboard Shift(Direction dir)
+        {
+            if (dir < 0)
+                return this >> -(int)dir;
+            else
+                return this << (int)dir;
+        }
+
         public bool IsEmpty()
         {
             return _components[0] != 0 && _components[1] != 0 && _components[2] != 0;
