@@ -6,8 +6,8 @@ namespace wut_go_mcts
     public struct Bitboard
     {
         private const int N_COMPONENTS = 3;
-        private const int N_USEFUL_BITS = 27;
-        private const int USEFUL_MASK = 0x7FFFFFF;
+        private const int N_USEFUL_BITS = 30;
+        private const int MASK = 0x3FEFFBFE;
 
         private uint[] _components;
 
@@ -29,44 +29,21 @@ namespace wut_go_mcts
         {
             _components = components;
         }
-
-        private static uint LSC(uint component, int shift)
-        {
-            return shift >= sizeof(uint) * 8 ? 0 : component << shift;
-        }
-
-        private static uint RSC(uint component, int shift)
-        {
-            return shift >= sizeof(uint) * 8 ? 0 : component >> shift;
-        }
-
         public static Bitboard operator <<(Bitboard bb, int shift)
         {
             return new Bitboard([
-                LSC(bb._components[0], shift) 
-                    & USEFUL_MASK,
-                (LSC(bb._components[1], shift) 
-                    | RSC(bb._components[0], N_USEFUL_BITS - shift)) 
-                    & USEFUL_MASK,
-                (LSC(bb._components[2], shift) 
-                    | RSC(bb._components[1], N_USEFUL_BITS - shift) 
-                    | RSC(bb._components[0], 2 * N_USEFUL_BITS - shift)) 
-                    & USEFUL_MASK
+                (bb._components[0] << shift) & MASK,
+                ((bb._components[1] << shift) | (bb._components[0] >> (N_USEFUL_BITS - shift))) & MASK,
+                ((bb._components[2] << shift) | (bb._components[1] >> (N_USEFUL_BITS - shift))) & MASK
             ]);
         }
 
         public static Bitboard operator >>(Bitboard bb, int shift)
         {
             return new Bitboard([
-                (RSC(bb._components[0], shift)
-                    | LSC(bb._components[1], N_USEFUL_BITS - shift)
-                    | LSC(bb._components[2], 2 * N_USEFUL_BITS - shift))
-                    & USEFUL_MASK,
-                (RSC(bb._components[1], shift) 
-                    | LSC(bb._components[2], N_USEFUL_BITS - shift))
-                    & USEFUL_MASK,
-                RSC(bb._components[2], shift) 
-                    & USEFUL_MASK
+                ((bb._components[0] >> shift) | (bb._components[1] << (N_USEFUL_BITS - shift))) & MASK,
+                ((bb._components[1] >> shift) | (bb._components[2] << (N_USEFUL_BITS - shift))) & MASK,
+                (bb._components[2] >> shift) & MASK
             ]);
         }
 
@@ -100,18 +77,17 @@ namespace wut_go_mcts
         public static Bitboard operator ~(Bitboard bb)
         {
             return new Bitboard([
-                ~bb._components[0] & USEFUL_MASK,
-                ~bb._components[1] & USEFUL_MASK,
-                ~bb._components[2] & USEFUL_MASK,
+                ~bb._components[0] & MASK,
+                ~bb._components[1] & MASK,
+                ~bb._components[2] & MASK,
             ]);
         }
 
         public static bool operator ==(Bitboard a, Bitboard b)
         {
-            for (int i = 0; i < N_COMPONENTS; i++)
-                if (a._components[i] != b._components[i])
-                    return false;
-            return true;
+            return a._components[0] == b._components[0]
+                && a._components[1] == b._components[1]
+                && a._components[2] == b._components[2];
         }
 
         public static bool operator !=(Bitboard a, Bitboard b)
@@ -121,40 +97,38 @@ namespace wut_go_mcts
 
         public bool IsEmpty()
         {
-            for (int i = 0; i < N_COMPONENTS; i++)
-                if (_components[i] != 0)
-                    return false;
-            return true;
+            return _components[0] != 0 && _components[1] != 0 && _components[2] != 0;
         }
 
         public void SetBit(int index)
         {
+            index += index / 9 + 1;
             _components[index / N_USEFUL_BITS] |= 1U << (index % N_USEFUL_BITS);
         }
 
         public void ClearBit(int index)
         {
+            index += index / 9 + 1;
             _components[index / N_USEFUL_BITS] &= 0U << (index % N_USEFUL_BITS);
         }
 
         public void ToggleBit(int index)
         {
+            index += index / 9 + 1;
             _components[index / N_USEFUL_BITS] ^= 1U << (index % N_USEFUL_BITS);
         }
 
         public bool IsBitSet(int index)
         {
+            index += index / 9 + 1;
             return (_components[index / N_USEFUL_BITS] >> (index % N_USEFUL_BITS)) == 1;
         }
 
         public int PopCount()
         {
-            int popCount = 0;
-            for (int i = 0; i < N_COMPONENTS; i++)
-            {
-                popCount += BitOperations.PopCount(_components[i]);
-            }
-            return popCount;
+            return BitOperations.PopCount(_components[0])
+                + BitOperations.PopCount(_components[1])
+                + BitOperations.PopCount(_components[2]);
         }
 
         public int PopLSB()
@@ -177,12 +151,12 @@ namespace wut_go_mcts
             for (int i = N_COMPONENTS - 1; i >= 0; i--)
             {
                 string binaryRepresentation = Convert.ToString(_components[i], 2).PadLeft(32, '0');
-                int offset = 5;
+                int offset = 2;
                 for (int j = 0; j < ROWS_PER_COMPONENT; j++)
                 {
                     output += binaryRepresentation.Substring(offset, BOARD_WIDTH);
                     output += '\n';
-                    offset += BOARD_WIDTH;
+                    offset += BOARD_WIDTH + 1;
                 }
             }
             return output;
