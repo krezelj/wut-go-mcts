@@ -8,6 +8,7 @@ namespace wut_go_mcts
         private const int N_COMPONENTS = 3;
         private const int N_USEFUL_BITS = 30;
         private const int MASK = 0x3FEFFBFE;
+        private const int BOARD_WIDTH = 9;
 
         private uint[] _components;
 
@@ -102,25 +103,25 @@ namespace wut_go_mcts
 
         public void SetBit(int index)
         {
-            index += index / 9 + 1;
+            index += index / BOARD_WIDTH + 1;
             _components[index / N_USEFUL_BITS] |= 1U << (index % N_USEFUL_BITS);
         }
 
         public void ClearBit(int index)
         {
-            index += index / 9 + 1;
+            index += index / BOARD_WIDTH + 1;
             _components[index / N_USEFUL_BITS] &= 0U << (index % N_USEFUL_BITS);
         }
 
         public void ToggleBit(int index)
         {
-            index += index / 9 + 1;
+            index += index / BOARD_WIDTH + 1;
             _components[index / N_USEFUL_BITS] ^= 1U << (index % N_USEFUL_BITS);
         }
 
         public bool IsBitSet(int index)
         {
-            index += index / 9 + 1;
+            index += index / BOARD_WIDTH + 1;
             return (_components[index / N_USEFUL_BITS] >> (index % N_USEFUL_BITS)) == 1;
         }
 
@@ -144,7 +145,6 @@ namespace wut_go_mcts
 
         public override string ToString()
         {
-            const int BOARD_WIDTH = 9;
             const int ROWS_PER_COMPONENT = 3;
 
             string output = "";
