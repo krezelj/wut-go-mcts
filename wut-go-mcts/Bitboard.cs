@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace wut_go_mcts
 {
@@ -8,7 +7,7 @@ namespace wut_go_mcts
         private const int N_COMPONENTS = 3;
         private const int N_USEFUL_BITS = 30;
         private const int MASK = 0x3FEFFBFE;
-        private const int BOARD_WIDTH = 9;
+        private const int BOARD_SIZE = 9;
 
         private uint[] _components;
 
@@ -106,31 +105,31 @@ namespace wut_go_mcts
 
         public bool IsEmpty()
         {
-            return _components[0] != 0 && _components[1] != 0 && _components[2] != 0;
+            return _components[0] == 0 && _components[1] == 0 && _components[2] == 0;
         }
 
         public void SetBit(int index)
         {
-            index += index / BOARD_WIDTH + 1;
+            index += index / BOARD_SIZE + 1;
             _components[index / N_USEFUL_BITS] |= 1U << (index % N_USEFUL_BITS);
         }
 
         public void ClearBit(int index)
         {
-            index += index / BOARD_WIDTH + 1;
+            index += index / BOARD_SIZE + 1;
             _components[index / N_USEFUL_BITS] &= 0U << (index % N_USEFUL_BITS);
         }
 
         public void ToggleBit(int index)
         {
-            index += index / BOARD_WIDTH + 1;
+            index += index / BOARD_SIZE + 1;
             _components[index / N_USEFUL_BITS] ^= 1U << (index % N_USEFUL_BITS);
         }
 
         public bool IsBitSet(int index)
         {
-            index += index / BOARD_WIDTH + 1;
-            return (_components[index / N_USEFUL_BITS] >> (index % N_USEFUL_BITS)) == 1;
+            index += index / BOARD_SIZE + 1;
+            return ((_components[index / N_USEFUL_BITS] >> (index % N_USEFUL_BITS)) & 1) == 1;
         }
 
         public int PopCount()
@@ -142,12 +141,44 @@ namespace wut_go_mcts
 
         public int PopLSB()
         {
-            throw new NotImplementedException();
+            if (PopCount() == 0)
+                return 81;
+            int i;
+            int c = 0;
+            if (_components[0] != 0)
+                c = 0;
+            else if (_components[1] != 0)
+                c = 1;
+            else if (_components[2] != 0)
+                c = 2;
+
+            i = BitOperations.TrailingZeroCount(_components[c]);
+            _components[c] &= (_components[c] - 1);
+            i += c * N_USEFUL_BITS;
+            i -= i / (BOARD_SIZE + 1) + 1;
+            return i;
         }
 
-        public void Expand()
+        public IEnumerable<Bitboard> SetBits()
         {
-            throw new NotImplementedException();
+            Bitboard copy = new Bitboard(this);
+            while (!copy.IsEmpty())
+            {
+                int lsb = copy.PopLSB();
+                Bitboard b = new Bitboard();
+                b.SetBit(lsb);
+                yield return b;
+            }
+        }
+
+        public Bitboard Expand()
+        {
+            return this | GetNeighbours();
+        }
+
+        public Bitboard GetNeighbours()
+        {
+            return Shift(Direction.Left) | Shift(Direction.Right) | Shift(Direction.Up) | Shift(Direction.Down);
         }
 
 
@@ -162,9 +193,9 @@ namespace wut_go_mcts
                 int offset = 2;
                 for (int j = 0; j < ROWS_PER_COMPONENT; j++)
                 {
-                    output += binaryRepresentation.Substring(offset, BOARD_WIDTH);
+                    output += binaryRepresentation.Substring(offset, BOARD_SIZE);
                     output += '\n';
-                    offset += BOARD_WIDTH + 1;
+                    offset += BOARD_SIZE + 1;
                 }
             }
             return output;
