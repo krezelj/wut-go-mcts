@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace wut_go_mcts
+namespace wut_go_mcts.Core
 {
     public struct Bitboard
     {
@@ -11,8 +11,8 @@ namespace wut_go_mcts
 
         private uint[] _components;
 
-        public Bitboard() 
-        { 
+        public Bitboard()
+        {
             _components = new uint[N_COMPONENTS];
         }
 
@@ -32,22 +32,22 @@ namespace wut_go_mcts
         public static Bitboard operator <<(Bitboard bb, int shift)
         {
             return new Bitboard([
-                (bb._components[0] << shift) & MASK,
-                ((bb._components[1] << shift) | (bb._components[0] >> (N_USEFUL_BITS - shift))) & MASK,
-                ((bb._components[2] << shift) | (bb._components[1] >> (N_USEFUL_BITS - shift))) & MASK
+                bb._components[0] << shift & MASK,
+                (bb._components[1] << shift | bb._components[0] >> N_USEFUL_BITS - shift) & MASK,
+                (bb._components[2] << shift | bb._components[1] >> N_USEFUL_BITS - shift) & MASK
             ]);
         }
 
         public static Bitboard operator >>(Bitboard bb, int shift)
         {
             return new Bitboard([
-                ((bb._components[0] >> shift) | (bb._components[1] << (N_USEFUL_BITS - shift))) & MASK,
-                ((bb._components[1] >> shift) | (bb._components[2] << (N_USEFUL_BITS - shift))) & MASK,
-                (bb._components[2] >> shift) & MASK
+                (bb._components[0] >> shift | bb._components[1] << N_USEFUL_BITS - shift) & MASK,
+                (bb._components[1] >> shift | bb._components[2] << N_USEFUL_BITS - shift) & MASK,
+                bb._components[2] >> shift & MASK
             ]);
         }
 
-        public static Bitboard operator |(Bitboard a, Bitboard b) 
+        public static Bitboard operator |(Bitboard a, Bitboard b)
         {
             return new Bitboard([
                 a._components[0] | b._components[0],
@@ -111,25 +111,25 @@ namespace wut_go_mcts
         public void SetBit(int index)
         {
             index += index / BOARD_SIZE + 1;
-            _components[index / N_USEFUL_BITS] |= 1U << (index % N_USEFUL_BITS);
+            _components[index / N_USEFUL_BITS] |= 1U << index % N_USEFUL_BITS;
         }
 
         public void ClearBit(int index)
         {
             index += index / BOARD_SIZE + 1;
-            _components[index / N_USEFUL_BITS] &= 0U << (index % N_USEFUL_BITS);
+            _components[index / N_USEFUL_BITS] &= 0U << index % N_USEFUL_BITS;
         }
 
         public void ToggleBit(int index)
         {
             index += index / BOARD_SIZE + 1;
-            _components[index / N_USEFUL_BITS] ^= 1U << (index % N_USEFUL_BITS);
+            _components[index / N_USEFUL_BITS] ^= 1U << index % N_USEFUL_BITS;
         }
 
         public bool IsBitSet(int index)
         {
             index += index / BOARD_SIZE + 1;
-            return ((_components[index / N_USEFUL_BITS] >> (index % N_USEFUL_BITS)) & 1) == 1;
+            return (_components[index / N_USEFUL_BITS] >> index % N_USEFUL_BITS & 1) == 1;
         }
 
         public int PopCount()
@@ -153,7 +153,7 @@ namespace wut_go_mcts
                 c = 2;
 
             i = BitOperations.TrailingZeroCount(_components[c]);
-            _components[c] &= (_components[c] - 1);
+            _components[c] &= _components[c] - 1;
             i += c * N_USEFUL_BITS;
             i -= i / (BOARD_SIZE + 1) + 1;
             return i;

@@ -1,4 +1,4 @@
-﻿namespace wut_go_mcts
+﻿namespace wut_go_mcts.Core
 {
     public struct Move
     {

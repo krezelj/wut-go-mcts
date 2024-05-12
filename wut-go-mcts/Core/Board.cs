@@ -1,4 +1,4 @@
-﻿namespace wut_go_mcts
+﻿namespace wut_go_mcts.Core
 {
     public struct Board
     {
@@ -56,7 +56,7 @@
                 // if the position is not actually repeated
                 if ((_oBoard & ~captures) != _oldOBoard)
                     moves.Add(new Move(koDiff, captures));
-                
+
                 // either way, remove the move
                 nonSuicides = nonSuicides & ~koDiff;
             }
@@ -91,7 +91,7 @@
             Bitboard hasAccessToLiberty = _empty.GetNeighbours() & _empty;
             while (true)
             {
-                proven = proven | (movesToProve & hasAccessToLiberty);
+                proven = proven | movesToProve & hasAccessToLiberty;
                 movesToProve = movesToProve & ~proven;
                 if (movesToProve.IsEmpty())
                     break;
