@@ -6,5 +6,5 @@
         LeftUp = 11, LeftDown = -9, RightUp = 9, RightDown = -11
     };
 
-    public enum Flags { SideToPlay = 0b000, Pass = 0b010, Finished = 0b100 }
+    public enum Flags { SideToPlay = 0b001, Pass = 0b010, Finished = 0b100 }
 }

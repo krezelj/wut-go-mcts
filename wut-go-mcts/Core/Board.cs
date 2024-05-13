@@ -11,12 +11,12 @@
 
         private Bitboard _empty => ~_black & ~_white;
         private Bitboard _full => _black | _white;
-        private bool _blackToPlay => (_flags & Flags.SideToPlay) == 0;
-        private Bitboard _pBoard => _blackToPlay ? _black : _white;
-        private Bitboard _oBoard => _blackToPlay ? _white : _black;
-        private Bitboard _oldPBoard => _blackToPlay ? _oldBlack : _oldWhite;
-        private Bitboard _oldOBoard => _blackToPlay ? _oldWhite : _oldBlack;
+        private Bitboard _pBoard => BlackToPlay ? _black : _white;
+        private Bitboard _oBoard => BlackToPlay ? _white : _black;
+        private Bitboard _oldPBoard => BlackToPlay ? _oldBlack : _oldWhite;
+        private Bitboard _oldOBoard => BlackToPlay ? _oldWhite : _oldBlack;
 
+        public bool BlackToPlay => (_flags & Flags.SideToPlay) == 0;
         public bool Pass => (_flags & Flags.Pass) > 0;
         public bool Finished => (_flags & Flags.Finished) > 0;
 
@@ -28,6 +28,15 @@
             _oldBlack = new Bitboard();
             _oldWhite = new Bitboard();
             _flags = 0;
+        }
+
+        public Board(Board board)
+        {
+            _black = new Bitboard(board._black);
+            _white = new Bitboard(board._white);
+            _oldBlack = new Bitboard(board._oldBlack);
+            _oldWhite = new Bitboard(board._oldWhite);
+            _flags = board._flags;
         }
 
         public Board(Bitboard black, Bitboard white)
@@ -180,7 +189,7 @@
                 _flags |= Flags.Pass;
             }
 
-            if ((_flags & Flags.SideToPlay) == 0)
+            if (BlackToPlay)
             {
                 _black |= move.Position;
                 _white = _white & ~move.Captures;
@@ -196,37 +205,80 @@
 
         public float Evaluate()
         {
-            throw new NotImplementedException();
+            return _black.PopCount() > _white.PopCount() ? 1.0f : -1.0f;
         }
 
         public override string ToString()
         {
+            string columnIndicators = "--A-B-C-D-E-F-G-H-I--";
             string output = "";
+            var moves = GetMoves();
+
+            output += columnIndicators + '\n';
             for (int i = 80; i >= 0; i--)
             {
+                if (i % 9 == 8)
+                    output += $"{i / 9 + 1} ";
                 if (_black.IsBitSet(i))
-                    output += 'X';
+                    output += "X ";
                 else if (_white.IsBitSet(i))
-                    output += 'O';
+                    output += "O ";
+                else if (moves.FindAll(m => m.Position.IsBitSet(i) && !m.Captures.IsEmpty()).Count != 0)
+                    output += "* ";
+                else if (moves.FindAll(m => m.Position.IsBitSet(i)).Count != 0)
+                    output += "+ ";
                 else
-                    output += '.';
+                    output += ". ";
                 if (i % 9 == 0)
-                    output += '\n';
+                    output += $"{i / 9 + 1} \n";
             }
+            output += columnIndicators;
+
             return output;
+        }
+
+        public void Display()
+        {
+            var bgcmap = new Dictionary<char, ConsoleColor>()
+            {
+                { 'X', ConsoleColor.Black },
+                { 'O', ConsoleColor.White },
+                { '+', ConsoleColor.Green },
+                { '.', ConsoleColor.DarkGray },
+                { '*', ConsoleColor.Red },
+            };
+            var fgcmap = new Dictionary<char, ConsoleColor>()
+            {
+                { 'X', ConsoleColor.White },
+                { 'O', ConsoleColor.Black },
+                { '+', ConsoleColor.Magenta },
+                { '.', ConsoleColor.White },
+                { '*', ConsoleColor.White },
+            };
+            string representation = ToString();
+            foreach (var c in representation)
+            {
+                if (c != ' ')
+                {
+                    Console.BackgroundColor = bgcmap.ContainsKey(c) ? bgcmap[c] : ConsoleColor.DarkRed;
+                    Console.ForegroundColor = fgcmap.ContainsKey(c) ? fgcmap[c] : ConsoleColor.White;
+                }
+                Console.Write(c);
+            }
+            Console.BackgroundColor = ConsoleColor.Black;
         }
 
         public static Board GetFromString()
         {
-            string s = "......XO." +
-                       "...OOOXOO" +
-                       "...O.OXXX" +
-                       "OOOOXO..." +
-                       "O.OOXOOOO" +
-                       "OXO...OXO" +
-                       "OXOOOOOXO" +
-                       "O.OO.OO.O" +
-                       "OOOOOOOOO";
+            string s = "........." +
+                       "........." +
+                       "........." +
+                       "........." +
+                       "........." +
+                       "........." +
+                       "........." +
+                       "........." +
+                       ".........";
             Board board = new Board();
             for (int i = 0; i < s.Length; i++)
             {
