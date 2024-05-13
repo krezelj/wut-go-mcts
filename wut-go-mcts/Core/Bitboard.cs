@@ -173,12 +173,52 @@ namespace wut_go_mcts.Core
 
         public Bitboard Expand()
         {
-            return this | GetNeighbours();
+            return new Bitboard([
+                (_components[0] 
+                    | (_components[0] << 1) 
+                    | (_components[0] >> 1)
+                    | (_components[0] >> 10)
+                    | (_components[0] << 10)
+                    | (_components[1] << 20)) & MASK,
+                (_components[1] 
+                    | (_components[1] << 1) 
+                    | (_components[1] >> 1)
+                    | (_components[1] >> 10)
+                    | (_components[1] << 10)
+                    | (_components[2] << 20) 
+                    | (_components[0] >> 20)) & MASK,
+                (_components[2] 
+                    | (_components[2] << 1) 
+                    | (_components[2] >> 1)
+                    | (_components[2] >> 10)
+                    | (_components[2] << 10)
+                    | (_components[1] >> 20)) & MASK,
+            ]);
         }
 
         public Bitboard GetNeighbours()
         {
-            return Shift(Direction.Left) | Shift(Direction.Right) | Shift(Direction.Up) | Shift(Direction.Down);
+            return new Bitboard([
+                (
+                    (_components[0] << 1)
+                    | (_components[0] >> 1)
+                    | (_components[0] >> 10)
+                    | (_components[0] << 10)
+                    | (_components[1] << 20)) & MASK,
+                (
+                    (_components[1] << 1)
+                    | (_components[1] >> 1)
+                    | (_components[1] >> 10)
+                    | (_components[1] << 10)
+                    | (_components[2] << 20)
+                    | (_components[0] >> 20)) & MASK,
+                (
+                    (_components[2] << 1)
+                    | (_components[2] >> 1)
+                    | (_components[2] >> 10)
+                    | (_components[2] << 10)
+                    | (_components[1] >> 20)) & MASK,
+            ]);
         }
 
 
