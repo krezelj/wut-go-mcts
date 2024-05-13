@@ -71,7 +71,7 @@
             }
 
             foreach (var movePosition in nonSuicides.SetBits())
-                moves.Add(new Move(movePosition, GetCapturedByMove(movePosition)));
+                moves.Add(new Move(movePosition));
 
             return moves;
         }
@@ -187,6 +187,12 @@
                     _flags |= Flags.Finished;
                 }
                 _flags |= Flags.Pass;
+            }
+
+            if (!move.CapturesCalculated)
+            {
+                move.Captures = GetCapturedByMove(move.Position);
+                move.CapturesCalculated = true;
             }
 
             if (BlackToPlay)
