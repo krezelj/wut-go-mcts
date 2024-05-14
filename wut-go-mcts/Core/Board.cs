@@ -9,7 +9,7 @@
         private Bitboard _oldBlack;
         private Bitboard _oldWhite;
 
-        private Bitboard _empty => ~_black & ~_white;
+        private Bitboard _empty => ~_black - _white;
         private Bitboard _full => _black | _white;
         private Bitboard _pBoard => BlackToPlay ? _black : _white;
         private Bitboard _oBoard => BlackToPlay ? _white : _black;
@@ -63,11 +63,11 @@
                 Bitboard captures = GetCapturedByMove(koDiff);
 
                 // if the position is not actually repeated
-                if ((_oBoard & ~captures) != _oldOBoard)
+                if ((_oBoard - captures) != _oldOBoard)
                     moves.Add(new Move(koDiff, captures));
 
                 // either way, remove the move
-                nonSuicides = nonSuicides & ~koDiff;
+                nonSuicides = nonSuicides - koDiff;
             }
 
             foreach (var movePosition in nonSuicides.SetBits())
@@ -80,7 +80,7 @@
         {
             Bitboard captures = new Bitboard();
             Bitboard checkedMask = new Bitboard();
-            Bitboard emptyAfterMove = _empty & ~movePosition;
+            Bitboard emptyAfterMove = _empty - movePosition;
             foreach (var adjecentOpponent in (movePosition.GetNeighbours() & _oBoard).SetBits())
             {
                 if (!(adjecentOpponent & checkedMask).IsEmpty())
@@ -101,7 +101,7 @@
             while (true)
             {
                 proven = proven | movesToProve & hasAccessToLiberty;
-                movesToProve = movesToProve & ~proven;
+                movesToProve = movesToProve - proven;
                 if (movesToProve.IsEmpty())
                     break;
 
@@ -118,10 +118,10 @@
             Bitboard proven = new Bitboard();
             foreach (var move in movesToProve.SetBits())
             {
-                if (ConnectsToLiberty(move, _pBoard | move, _empty & ~move))
+                if (ConnectsToLiberty(move, _pBoard | move, _empty - move))
                 {
                     proven |= move;
-                    movesToProve = movesToProve & ~move;
+                    movesToProve = movesToProve - move;
                 }
             }
             return proven;
@@ -134,10 +134,10 @@
             {
                 foreach (var adjecentOpponent in (move.GetNeighbours() & _oBoard).SetBits())
                 {
-                    if (!ConnectsToLiberty(adjecentOpponent, _oBoard, _empty & ~move))
+                    if (!ConnectsToLiberty(adjecentOpponent, _oBoard, _empty - move))
                     {
                         proven |= move;
-                        movesToProve = movesToProve & ~move;
+                        movesToProve = movesToProve - move;
                     }
                 }
             }
@@ -198,13 +198,13 @@
             if (BlackToPlay)
             {
                 _black |= move.Position;
-                _white = _white & ~move.Captures;
+                _white = _white - move.Captures;
                 _flags |= Flags.SideToPlay;
             }
             else
             {
                 _white |= move.Position;
-                _black = _black & ~move.Captures;
+                _black = _black - move.Captures;
                 _flags = _flags & ~Flags.SideToPlay;
             }
         }

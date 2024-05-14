@@ -58,8 +58,12 @@ namespace wut_go_mcts.Core
 
         public static Bitboard operator-(Bitboard a, Bitboard b)
         {
-            // and not macro
-            throw new NotImplementedException();
+            // a & ~b
+            Bitboard c = a;
+            c._c0 = c._c0 & (~b._c0 & MASK);
+            c._c1 = c._c1 & (~b._c1 & MASK);
+            c._c2 = c._c2 & (~b._c2 & MASK);
+            return c;
         }
 
         public static bool operator ==(Bitboard a, Bitboard b)
