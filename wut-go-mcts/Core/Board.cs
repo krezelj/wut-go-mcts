@@ -106,7 +106,7 @@
                     break;
 
                 Bitboard newHasAccessToLibery = hasAccessToLiberty.Expand() & (movesToProve | _pBoard);
-                if ((newHasAccessToLibery ^ hasAccessToLiberty).IsEmpty())
+                if (newHasAccessToLibery == hasAccessToLiberty)
                     break; // cannot prove any more moves
                 hasAccessToLiberty = newHasAccessToLibery;
             }
@@ -151,7 +151,7 @@
             while (true)
             {
                 Bitboard newFloodfill = floodfill.Expand() & (friendly | empty);
-                if ((newFloodfill ^ floodfill).IsEmpty())
+                if (newFloodfill == floodfill)
                     break;
                 if (!(newFloodfill & empty).IsEmpty())
                 {
@@ -169,7 +169,7 @@
             while (true)
             {
                 Bitboard newFloodfill = floodfill.Expand() & open;
-                if ((newFloodfill ^ floodfill).IsEmpty())
+                if (newFloodfill == floodfill)
                     return floodfill;
                 floodfill = newFloodfill;
             }
