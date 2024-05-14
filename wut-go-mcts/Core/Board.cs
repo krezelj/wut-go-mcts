@@ -138,6 +138,7 @@
                     {
                         proven |= move;
                         movesToProve = movesToProve - move;
+                        break;
                     }
                 }
             }
