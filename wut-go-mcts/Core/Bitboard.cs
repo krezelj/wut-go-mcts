@@ -213,6 +213,15 @@ namespace wut_go_mcts.Core
             return copy;
         }
 
+        public Bitboard GetNeighbours(Bitboard mask)
+        {
+            Bitboard copy = this;
+            copy._c0 = ((_c0 << 1) | (_c0 >> 1) | (_c0 >> 10) | (_c0 << 10) | (_c1 << 20)) & MASK & mask._c0;
+            copy._c1 = ((_c1 << 1) | (_c1 >> 1) | (_c1 >> 10) | (_c1 << 10) | (_c2 << 20) | (_c0 >> 20)) & MASK & mask._c1;
+            copy._c2 = ((_c2 << 1) | (_c2 >> 1) | (_c2 >> 10) | (_c2 << 10) | (_c1 >> 20)) & MASK & mask._c2;
+            return copy;
+        }
+
 
         public override string ToString()
         {

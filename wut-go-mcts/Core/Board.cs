@@ -81,7 +81,7 @@
             Bitboard captures = new Bitboard();
             Bitboard checkedMask = new Bitboard();
             Bitboard emptyAfterMove = _empty - movePosition;
-            foreach (var adjecentOpponent in (movePosition.GetNeighbours() & _oBoard).SetBits())
+            foreach (var adjecentOpponent in movePosition.GetNeighbours(_oBoard).SetBits())
             {
                 if (!(adjecentOpponent & checkedMask).IsEmpty())
                     continue; // the capture nature of this stone is already determined
@@ -97,7 +97,7 @@
         private Bitboard ProveConnectedToOpenLiberties(ref Bitboard movesToProve)
         {
             Bitboard proven = new Bitboard();
-            Bitboard hasAccessToLiberty = _empty.GetNeighbours() & _empty;
+            Bitboard hasAccessToLiberty = _empty.GetNeighbours(_empty);
             while (true)
             {
                 proven = proven | movesToProve & hasAccessToLiberty;
@@ -132,7 +132,7 @@
             Bitboard proven = new Bitboard();
             foreach (var move in movesToProve.SetBits())
             {
-                foreach (var adjecentOpponent in (move.GetNeighbours() & _oBoard).SetBits())
+                foreach (var adjecentOpponent in move.GetNeighbours(_oBoard).SetBits())
                 {
                     if (!ConnectsToLiberty(adjecentOpponent, _oBoard, _empty - move))
                     {
