@@ -32,10 +32,10 @@
 
         public Board(Board board)
         {
-            _black = new Bitboard(board._black);
-            _white = new Bitboard(board._white);
-            _oldBlack = new Bitboard(board._oldBlack);
-            _oldWhite = new Bitboard(board._oldWhite);
+            _black = board._black;
+            _white = board._white;
+            _oldBlack = board._oldBlack;
+            _oldWhite = board._oldWhite;
             _flags = board._flags;
         }
 
@@ -146,7 +146,7 @@
 
         private bool ConnectsToLiberty(Bitboard position, Bitboard friendly, Bitboard empty)
         {
-            Bitboard floodfill = new Bitboard(position);
+            Bitboard floodfill = position;
             bool emptyIntersectionFound = false;
             while (true)
             {
@@ -165,7 +165,7 @@
 
         private Bitboard Floodfill(Bitboard b, Bitboard open)
         {
-            Bitboard floodfill = new Bitboard(b);
+            Bitboard floodfill = b;
             while (true)
             {
                 Bitboard newFloodfill = floodfill.Expand() & open;
