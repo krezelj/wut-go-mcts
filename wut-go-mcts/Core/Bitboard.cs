@@ -56,6 +56,12 @@ namespace wut_go_mcts.Core
             return c;
         }
 
+        public static Bitboard operator-(Bitboard a, Bitboard b)
+        {
+            // and not macro
+            throw new NotImplementedException();
+        }
+
         public static bool operator ==(Bitboard a, Bitboard b)
         {
             return a._c0 == b._c0
