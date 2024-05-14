@@ -87,7 +87,7 @@
                     continue; // the capture nature of this stone is already determined
 
                 Bitboard floodfill = Floodfill(adjecentOpponent, _oBoard);
-                if ((floodfill.Expand() & emptyAfterMove).IsEmpty()) // no liberties
+                if (floodfill.Expand(emptyAfterMove).IsEmpty()) // no liberties
                     captures |= floodfill;
                 checkedMask |= floodfill;
             }
@@ -105,7 +105,7 @@
                 if (movesToProve.IsEmpty())
                     break;
 
-                Bitboard newHasAccessToLibery = hasAccessToLiberty.Expand() & (movesToProve | _pBoard);
+                Bitboard newHasAccessToLibery = hasAccessToLiberty.Expand(movesToProve | _pBoard);
                 if (newHasAccessToLibery == hasAccessToLiberty)
                     break; // cannot prove any more moves
                 hasAccessToLiberty = newHasAccessToLibery;
@@ -150,7 +150,7 @@
             bool emptyIntersectionFound = false;
             while (true)
             {
-                Bitboard newFloodfill = floodfill.Expand() & (friendly | empty);
+                Bitboard newFloodfill = floodfill.Expand(friendly | empty);
                 if (newFloodfill == floodfill)
                     break;
                 if (!(newFloodfill & empty).IsEmpty())
@@ -168,7 +168,7 @@
             Bitboard floodfill = b;
             while (true)
             {
-                Bitboard newFloodfill = floodfill.Expand() & open;
+                Bitboard newFloodfill = floodfill.Expand(open);
                 if (newFloodfill == floodfill)
                     return floodfill;
                 floodfill = newFloodfill;
