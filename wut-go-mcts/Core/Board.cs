@@ -8,8 +8,7 @@
         private Bitboard _white;
         private Bitboard _oldBlack;
         private Bitboard _oldWhite;
-
-        private Bitboard _empty => ~_black - _white;
+        private Bitboard _empty;
         private Bitboard _full => _black | _white;
         private Bitboard _pBoard => BlackToPlay ? _black : _white;
         private Bitboard _oBoard => BlackToPlay ? _white : _black;
@@ -27,6 +26,7 @@
             _white = new Bitboard();
             _oldBlack = new Bitboard();
             _oldWhite = new Bitboard();
+            _empty = ~_black - _white;
             _flags = 0;
         }
 
@@ -207,6 +207,7 @@
                 _black = _black - move.Captures;
                 _flags = _flags & ~Flags.SideToPlay;
             }
+            _empty = ~_black - _white;
         }
 
         public float Evaluate()
