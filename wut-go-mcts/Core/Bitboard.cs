@@ -157,13 +157,28 @@ namespace wut_go_mcts.Core
 
         public IEnumerable<Bitboard> SetBits()
         {
-            Bitboard copy = this;
-            while (!copy.IsEmpty())
+            Bitboard output = new Bitboard();
+            while (_c0 != 0)
             {
-                int lsb = copy.PopLSB();
-                Bitboard b = new Bitboard();
-                b.SetBit(lsb);
-                yield return b;
+                output._c0 = 1U << BitOperations.TrailingZeroCount(_c0);
+                _c0 &= _c0 - 1;
+                yield return output;
+            }
+            output._c0 = 0;
+
+            while (_c1 != 0)
+            {
+                output._c1 = 1U << BitOperations.TrailingZeroCount(_c1);
+                _c1 &= _c1 - 1;
+                yield return output;
+            }
+            output._c1 = 0;
+
+            while (_c2 != 0)
+            {
+                output._c2 = 1U << BitOperations.TrailingZeroCount(_c2);
+                _c2 &= _c2 - 1;
+                yield return output;
             }
         }
 
