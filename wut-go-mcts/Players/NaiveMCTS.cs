@@ -28,30 +28,38 @@ namespace wut_go_mcts.Players
             for (int i = 0; i < moves.Count; i++)
             {
                 var move = moves[i];
-                for (int j = 0; j < 5; j++)
+                for (int j = 0; j < 100; j++)
                 {
                     Board copy = new Board(board);
                     copy.ApplyMove(move);
-                    rewards[i] += Simulate(copy);
+                    rewards[i] += (board.BlackToPlay ? 1.0f : -1.0f) * Simulate(copy);
                 }
             }
             sw.Stop();
 
-            Console.WriteLine($"Nodes: {_nodes} | kNPS: {(float)_nodes/sw.ElapsedMilliseconds}");
+            Console.WriteLine($"Nodes: {_nodes} | kNPS: {(float)_nodes/sw.ElapsedMilliseconds} | {rewards.Max()}");
 
             return moves[rewards.ToList().IndexOf(rewards.Max())];
         }
 
         private float Simulate(Board board)
         {
+            int depth = 0;
             while (!board.Finished)
             {
                 _nodes++;
+                depth++;
+                if (depth == 1000)
+                {
+                    board.Display();
+                    Console.ReadKey();
+                }
                 var moves = board.GetMoves();
                 if (moves.Count == 0)
                     board.ApplyMove(Move.Pass());
                 else
                     board.ApplyMove(moves[_rng.Next(moves.Count)]);
+
             }
 
             _nodes++;
