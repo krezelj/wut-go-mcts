@@ -159,31 +159,35 @@ namespace wut_go_mcts.Core
             return i;
         }
 
-        public IEnumerable<Bitboard> SetBits()
+        public Bitboard[] SetBits()
         {
-            Bitboard output = new Bitboard();
-            while (_c0 != 0)
+            Bitboard[] output = new Bitboard[PopCount()];
+            Bitboard placeholder = new Bitboard();
+            Bitboard copy = this;
+            int i = 0;
+            while (copy._c0 != 0)
             {
-                output._c0 = 1U << BitOperations.TrailingZeroCount(_c0);
-                _c0 &= _c0 - 1;
-                yield return output;
+                placeholder._c0 = 1U << BitOperations.TrailingZeroCount(copy._c0);
+                copy._c0 &= copy._c0 - 1;
+                output[i++] = placeholder;
             }
-            output._c0 = 0;
+            placeholder._c0 = 0;
 
-            while (_c1 != 0)
+            while (copy._c1 != 0)
             {
-                output._c1 = 1U << BitOperations.TrailingZeroCount(_c1);
-                _c1 &= _c1 - 1;
-                yield return output;
+                placeholder._c1 = 1U << BitOperations.TrailingZeroCount(copy._c1);
+                copy._c1 &= copy._c1 - 1;
+                output[i++] = placeholder;
             }
-            output._c1 = 0;
+            placeholder._c1 = 0;
 
-            while (_c2 != 0)
+            while (copy._c2 != 0)
             {
-                output._c2 = 1U << BitOperations.TrailingZeroCount(_c2);
-                _c2 &= _c2 - 1;
-                yield return output;
+                placeholder._c2 = 1U << BitOperations.TrailingZeroCount(copy._c2);
+                copy._c2 &= copy._c2 - 1;
+                output[i++] = placeholder;
             }
+            return output;
         }
 
         public Bitboard Expand()
@@ -241,6 +245,9 @@ namespace wut_go_mcts.Core
             const int ROWS_PER_COMPONENT = 3;
 
             string output = "";
+            return Convert.ToString(_c2, 2).PadLeft(32, '0')
+                + Convert.ToString(_c1, 2).PadLeft(32, '0')
+                + Convert.ToString(_c0, 2).PadLeft(32, '0');
             //for (int i = N_COMPONENTS - 1; i >= 0; i--)
             //{
             //    string binaryRepresentation = Convert.ToString(_components[i], 2).PadLeft(32, '0');
