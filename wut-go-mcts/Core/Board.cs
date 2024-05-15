@@ -148,20 +148,16 @@
         private bool ConnectsToLiberty(Bitboard position, Bitboard friendly, Bitboard empty)
         {
             Bitboard floodfill = position;
-            bool emptyIntersectionFound = false;
+            Bitboard open = friendly | empty;
             while (true)
             {
-                Bitboard newFloodfill = floodfill.Expand(friendly | empty);
+                Bitboard newFloodfill = floodfill.Expand(open);
                 if (newFloodfill == floodfill)
-                    break;
+                    return false;
                 if (!(newFloodfill & empty).IsEmpty())
-                {
-                    emptyIntersectionFound = true;
-                    break;
-                }
+                    return true;
                 floodfill = newFloodfill;
             }
-            return emptyIntersectionFound;
         }
 
         private Bitboard Floodfill(Bitboard b, Bitboard open)
