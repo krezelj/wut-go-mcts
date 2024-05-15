@@ -7,17 +7,9 @@
         public bool CapturesCalculated;
         public bool IsPass => Position.IsEmpty();
 
-        public Move()
-        {
-            Position = new Bitboard();
-            Captures = new Bitboard();
-            CapturesCalculated = false;
-        }
-
         public Move(Bitboard position)
         {
             Position = position;
-            Captures = new Bitboard();
             CapturesCalculated = false;
         }
 
