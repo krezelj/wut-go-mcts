@@ -22,13 +22,14 @@ namespace wut_go_mcts.Players
                 return Move.Pass();
 
             var moves = board.GetMoves();
-            float[] rewards = new float[moves.Count];
+            float[] rewards = new float[moves.Length];
 
+            int n_sims = 100;
             sw.Start();
-            for (int i = 0; i < moves.Count; i++)
+            for (int i = 0; i < moves.Length; i++)
             {
                 var move = moves[i];
-                for (int j = 0; j < 100; j++)
+                for (int j = 0; j < n_sims; j++)
                 {
                     Board copy = new Board(board);
                     copy.ApplyMove(move);
@@ -37,7 +38,7 @@ namespace wut_go_mcts.Players
             }
             sw.Stop();
 
-            Console.WriteLine($"Nodes: {_nodes} | kNPS: {(float)_nodes/sw.ElapsedMilliseconds} | {rewards.Max()}");
+            Console.WriteLine($"Nodes: {_nodes} | kNPS: {(float)_nodes/sw.ElapsedMilliseconds} | {(rewards.Max() + n_sims)/(2*n_sims)}");
 
             return moves[rewards.ToList().IndexOf(rewards.Max())];
         }
@@ -55,10 +56,10 @@ namespace wut_go_mcts.Players
                     Console.ReadKey();
                 }
                 var moves = board.GetMoves();
-                if (moves.Count == 0)
+                if (moves.Length == 0)
                     board.ApplyMove(Move.Pass());
                 else
-                    board.ApplyMove(moves[_rng.Next(moves.Count)]);
+                    board.ApplyMove(moves[_rng.Next(moves.Length)]);
 
             }
 

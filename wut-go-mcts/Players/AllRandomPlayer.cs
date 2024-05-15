@@ -13,7 +13,7 @@ namespace wut_go_mcts.Players
         public override Move Think(Board board)
         {
             var moves = board.GetMoves();
-            int idx = _rng.Next(moves.Count);
+            int idx = _rng.Next(moves.Length);
             return moves[idx];
         }
     }
