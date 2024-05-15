@@ -204,6 +204,19 @@ namespace wut_go_mcts.Core
             return copy;
         }
 
+        public bool ExpandInplace(Bitboard mask)
+        {
+            uint old_c0 = _c0;
+            uint old_c1 = _c1;
+            uint old_c2 = _c2;
+
+            _c0 = (_c0 | (_c0 << 1) | (_c0 >> 1) | (_c0 >> 10) | (_c0 << 10) | (_c1 << 20)) & MASK & mask._c0;
+            _c1 = (_c1 | (_c1 << 1) | (_c1 >> 1) | (_c1 >> 10) | (_c1 << 10) | (_c2 << 20) | (_c0 >> 20)) & MASK & mask._c1;
+            _c2 = (_c2 | (_c2 << 1) | (_c2 >> 1) | (_c2 >> 10) | (_c2 << 10) | (_c1 >> 20)) & MASK & mask._c2;
+
+            return old_c0 != _c0 || old_c1 != _c1 || old_c2 != _c2;
+        }
+
         public Bitboard GetNeighbours()
         {
             Bitboard copy = this;

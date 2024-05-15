@@ -105,10 +105,8 @@
                 if (movesToProve.IsEmpty())
                     break;
 
-                Bitboard newHasAccessToLibery = hasAccessToLiberty.Expand(movesToProve | _pBoard);
-                if (newHasAccessToLibery == hasAccessToLiberty)
+                if (!hasAccessToLiberty.ExpandInplace(movesToProve | _pBoard))
                     break; // cannot prove any more moves
-                hasAccessToLiberty = newHasAccessToLibery;
             }
             return proven;
         }
@@ -149,27 +147,19 @@
         {
             Bitboard floodfill = position;
             Bitboard open = friendly | empty;
-            while (true)
+            while (floodfill.ExpandInplace(open))
             {
-                Bitboard newFloodfill = floodfill.Expand(open);
-                if (newFloodfill == floodfill)
-                    return false;
-                if (!(newFloodfill & empty).IsEmpty())
+                if (!(floodfill & empty).IsEmpty())
                     return true;
-                floodfill = newFloodfill;
             }
+            return false;
         }
 
         private Bitboard Floodfill(Bitboard b, Bitboard open)
         {
             Bitboard floodfill = b;
-            while (true)
-            {
-                Bitboard newFloodfill = floodfill.Expand(open);
-                if (newFloodfill == floodfill)
-                    return floodfill;
-                floodfill = newFloodfill;
-            }
+            while (floodfill.ExpandInplace(open)) { }
+            return floodfill;
         }
 
         public void ApplyMove(Move move)
