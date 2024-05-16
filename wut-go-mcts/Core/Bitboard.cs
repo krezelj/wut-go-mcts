@@ -230,7 +230,7 @@ namespace wut_go_mcts.Core
             return copy;
         }
 
-        public Bitboard GetNeighbours(Bitboard mask)
+        public Bitboard GetNeighboursMask(Bitboard mask)
         {
             Bitboard copy = this;
             copy._c0 = ((_c0 << 1) | (_c0 >> 1) | (_c0 >> 10) | (_c0 << 10) | (_c1 << 20)) & MASK & mask._c0;
