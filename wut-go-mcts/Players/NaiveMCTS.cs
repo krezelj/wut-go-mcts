@@ -24,7 +24,7 @@ namespace wut_go_mcts.Players
             var moves = board.GetMoves();
             float[] rewards = new float[moves.Length];
 
-            int n_sims = 100;
+            int n_sims = 300;
             sw.Start();
             for (int i = 0; i < moves.Length; i++)
             {
