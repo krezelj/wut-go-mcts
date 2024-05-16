@@ -38,7 +38,7 @@ namespace wut_go_mcts.Players
             }
             sw.Stop();
 
-            Console.WriteLine($"Nodes: {_nodes} | kNPS: {(float)_nodes/sw.ElapsedMilliseconds} | {(rewards.Max() + n_sims)/(2*n_sims)}");
+            Console.WriteLine($"Nodes: {_nodes} | kNPS: {(float)_nodes / sw.ElapsedMilliseconds} | {(rewards.Max() + n_sims) / (2 * n_sims)}");
 
             return moves[rewards.ToList().IndexOf(rewards.Max())];
         }
@@ -55,11 +55,11 @@ namespace wut_go_mcts.Players
                     board.Display();
                     Console.ReadKey();
                 }
-                var moves = board.GetMoves();
-                if (moves.Length <= 1 || board.Pass)
+                var movesMask = board.GetMovesMask();
+                if (movesMask.PopCount() <= 1 || board.Pass)
                     board.ApplyMove(Move.Pass());
                 else
-                    board.ApplyMove(moves[_rng.Next(moves.Length)]);
+                    board.ApplyMove(new Move(movesMask.GetRandomBit()));
 
             }
 
