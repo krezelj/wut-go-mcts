@@ -102,18 +102,6 @@
 
         private void ProveConnectedToOpenLiberties(ref Bitboard movesToProve, ref Bitboard proven)
         {
-            //Bitboard hasAccessToLiberty = _empty.GetNeighbours(_empty);
-            //while (true)
-            //{
-            //    proven = proven | movesToProve & hasAccessToLiberty;
-            //    movesToProve = movesToProve - proven;
-            //    if (movesToProve.IsEmpty())
-            //        break;
-
-            //    if (!hasAccessToLiberty.ExpandInplace(movesToProve | _pBoard))
-            //        break; // cannot prove any more moves
-            //}
-
             Bitboard open = movesToProve | _pBoard;
             Bitboard hasAccessToLiberty = _empty.GetNeighbours(_empty).Floodfill(open);
             proven = proven | (movesToProve & hasAccessToLiberty);
