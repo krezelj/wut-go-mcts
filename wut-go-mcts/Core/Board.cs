@@ -186,7 +186,26 @@ namespace wut_go_mcts.Core
 
         public float Evaluate()
         {
-            return _black.PopCount() > _white.PopCount() ? 1.0f : -1.0f;
+            int countDiff = _black.PopCount() - _white.PopCount();
+
+            Bitboard mask = new Bitboard();
+            foreach (var position in _empty.SetBits())
+            {
+                if (position.Intersects(mask))
+                    continue;
+
+                Bitboard floodfill = position.Floodfill(_empty);
+                int floodfillCount = floodfill.PopCount();
+                floodfill.ExpandInplace(_full);
+
+                if (floodfill.Intersects(_black))
+                    countDiff += floodfillCount;
+                if (floodfill.Intersects(_white))
+                    countDiff -= floodfillCount;
+            }
+
+            return countDiff == 0 ? 0 : (countDiff > 0 ? 1.0f : -1.0f);
+
         }
 
         public override string ToString()
