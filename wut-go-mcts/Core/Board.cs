@@ -89,7 +89,7 @@
             Bitboard emptyAfterMove = _empty - movePosition;
             foreach (var adjecentOpponent in movePosition.GetNeighbours(_oBoard).SetBits())
             {
-                if (!(adjecentOpponent & checkedMask).IsEmpty())
+                if (adjecentOpponent.Intersects(checkedMask))
                     continue; // the capture nature of this stone is already determined
 
                 Bitboard floodfill = adjecentOpponent.Floodfill(_oBoard);
@@ -158,7 +158,7 @@
             Bitboard floodfill = position;
             while (floodfill.ExpandInplace(open))
             {
-                if (!(floodfill & empty).IsEmpty())
+                if (floodfill.Intersects(empty))
                     return true;
             }
             return false;

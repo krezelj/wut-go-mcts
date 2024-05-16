@@ -246,6 +246,11 @@ namespace wut_go_mcts.Core
             return floodfill;
         }
 
+        public bool Intersects(Bitboard other)
+        {
+            return ((_c0 & other._c0) != 0) | ((_c1 & other._c1) != 0) | ((_c2 & other._c2) != 0);
+        }
+
         public override string ToString()
         {
             const int ROWS_PER_COMPONENT = 3;
