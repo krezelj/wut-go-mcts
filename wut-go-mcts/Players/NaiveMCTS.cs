@@ -18,13 +18,13 @@ namespace wut_go_mcts.Players
             _nodes = 0;
             var sw = new Stopwatch();
 
-            if (board.Pass)
+            var moves = board.GetMoves();
+            if (board.Pass || moves.Length == 0)
                 return Move.Pass();
 
-            var moves = board.GetMoves();
             float[] rewards = new float[moves.Length];
 
-            int n_sims = 300;
+            int n_sims = 1500;
             sw.Start();
             for (int i = 0; i < moves.Length; i++)
             {
@@ -56,7 +56,7 @@ namespace wut_go_mcts.Players
                     Console.ReadKey();
                 }
                 var moves = board.GetMoves();
-                if (moves.Length == 0)
+                if (moves.Length <= 1 || board.Pass)
                     board.ApplyMove(Move.Pass());
                 else
                     board.ApplyMove(moves[_rng.Next(moves.Length)]);
