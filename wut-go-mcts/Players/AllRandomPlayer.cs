@@ -12,9 +12,10 @@ namespace wut_go_mcts.Players
 
         public override Move Think(Board board)
         {
-            var moves = board.GetMoves();
-            int idx = _rng.Next(moves.Length);
-            return moves[idx];
+            var movesMask = board.GetMovesMask();
+            if (board.Pass || movesMask.PopCount() <= 1)
+                return Move.Pass();
+            return new Move(movesMask.GetRandomBit());
         }
     }
 }

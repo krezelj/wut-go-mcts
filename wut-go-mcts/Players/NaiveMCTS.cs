@@ -24,7 +24,7 @@ namespace wut_go_mcts.Players
 
             float[] rewards = new float[moves.Length];
 
-            int n_sims = 1500;
+            int n_sims = 1000;
             sw.Start();
             for (int i = 0; i < moves.Length; i++)
             {
@@ -38,8 +38,8 @@ namespace wut_go_mcts.Players
             }
             sw.Stop();
 
-            Console.WriteLine($"Nodes: {_nodes} | kNPS: {(float)_nodes / sw.ElapsedMilliseconds} | {(rewards.Max() + n_sims) / (2 * n_sims)}");
-
+            float winProb = (rewards.Max() + n_sims) / (2 * n_sims);
+            Console.WriteLine($"Nodes: {_nodes} | kNPS: {(float)_nodes / sw.ElapsedMilliseconds} | {winProb}");
             return moves[rewards.ToList().IndexOf(rewards.Max())];
         }
 
