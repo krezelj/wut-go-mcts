@@ -122,7 +122,9 @@
             Bitboard proven = new Bitboard();
             foreach (var move in movesToProve.SetBits())
             {
-                if (ConnectsToLiberty(move, _pBoard | move, _empty - move))
+                Bitboard newEmpty = _empty - move;
+                Bitboard open = _pBoard | move | newEmpty;
+                if (ConnectsToLiberty(move, open, newEmpty))
                 {
                     proven |= move;
                     movesToProve = movesToProve - move;
@@ -136,9 +138,11 @@
             Bitboard proven = new Bitboard();
             foreach (var move in movesToProve.SetBits())
             {
+                Bitboard newEmpty = _empty - move;
+                Bitboard open = _oBoard | newEmpty;
                 foreach (var adjecentOpponent in move.GetNeighbours(_oBoard).SetBits())
                 {
-                    if (!ConnectsToLiberty(adjecentOpponent, _oBoard, _empty - move))
+                    if (!ConnectsToLiberty(adjecentOpponent, open, newEmpty))
                     {
                         proven |= move;
                         movesToProve = movesToProve - move;
@@ -149,10 +153,9 @@
             return proven;
         }
 
-        private bool ConnectsToLiberty(Bitboard position, Bitboard friendly, Bitboard empty)
+        private bool ConnectsToLiberty(Bitboard position, Bitboard open, Bitboard empty)
         {
             Bitboard floodfill = position;
-            Bitboard open = friendly | empty;
             while (floodfill.ExpandInplace(open))
             {
                 if (!(floodfill & empty).IsEmpty())
