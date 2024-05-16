@@ -110,16 +110,16 @@
 
         private void ProveConnectedToClosedLiberties(ref Bitboard movesToProve, ref Bitboard proven)
         {
+            Bitboard open = _pBoard | _empty;
             foreach (var move in movesToProve.SetBits())
             {
-                Bitboard newEmpty = _empty - move;
-                Bitboard open = _pBoard | move | newEmpty;
-                if (ConnectsToLiberty(move, open, newEmpty))
-                {
-                    proven |= move;
-                    movesToProve = movesToProve - move;
-                }
+                if (move.Intersects(proven))
+                    continue; // move already proven in a previous iteration
+                Bitboard floodfill = move.Floodfill(open);
+                if (floodfill.Intersects(_empty - move))
+                    proven = proven | (movesToProve & floodfill);
             }
+            movesToProve -= proven;
         }
 
         private void ProveCapturesWithNoLiberties(ref Bitboard movesToProve, ref Bitboard proven)
