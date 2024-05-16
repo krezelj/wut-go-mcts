@@ -50,9 +50,9 @@
             Bitboard movesToProve = _empty;
             Bitboard nonSuicides = new Bitboard();
 
-            nonSuicides |= ProveConnectedToOpenLiberties(ref movesToProve);
-            nonSuicides |= ProveConnectedToClosedLiberties(ref movesToProve);
-            nonSuicides |= ProveCapturesWithNoLiberties(ref movesToProve);
+            ProveConnectedToOpenLiberties(ref movesToProve, ref nonSuicides);
+            ProveConnectedToClosedLiberties(ref movesToProve, ref nonSuicides);
+            ProveCapturesWithNoLiberties(ref movesToProve, ref nonSuicides);
 
             int moveCount = nonSuicides.PopCount();
             // positions where there was own stone in the previous position but where we can also place a stone now
@@ -100,9 +100,8 @@
             return captures;
         }
 
-        private Bitboard ProveConnectedToOpenLiberties(ref Bitboard movesToProve)
+        private void ProveConnectedToOpenLiberties(ref Bitboard movesToProve, ref Bitboard proven)
         {
-            Bitboard proven = new Bitboard();
             Bitboard hasAccessToLiberty = _empty.GetNeighbours(_empty);
             while (true)
             {
@@ -114,12 +113,10 @@
                 if (!hasAccessToLiberty.ExpandInplace(movesToProve | _pBoard))
                     break; // cannot prove any more moves
             }
-            return proven;
         }
 
-        private Bitboard ProveConnectedToClosedLiberties(ref Bitboard movesToProve)
+        private void ProveConnectedToClosedLiberties(ref Bitboard movesToProve, ref Bitboard proven)
         {
-            Bitboard proven = new Bitboard();
             foreach (var move in movesToProve.SetBits())
             {
                 Bitboard newEmpty = _empty - move;
@@ -130,12 +127,10 @@
                     movesToProve = movesToProve - move;
                 }
             }
-            return proven;
         }
 
-        private Bitboard ProveCapturesWithNoLiberties(ref Bitboard movesToProve)
+        private void ProveCapturesWithNoLiberties(ref Bitboard movesToProve, ref Bitboard proven)
         {
-            Bitboard proven = new Bitboard();
             foreach (var move in movesToProve.SetBits())
             {
                 Bitboard newEmpty = _empty - move;
@@ -150,7 +145,6 @@
                     }
                 }
             }
-            return proven;
         }
 
         private bool ConnectsToLiberty(Bitboard position, Bitboard open, Bitboard empty)
