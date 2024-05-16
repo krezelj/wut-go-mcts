@@ -1,4 +1,6 @@
-﻿namespace wut_go_mcts.Core
+﻿using System.Reflection.Metadata.Ecma335;
+
+namespace wut_go_mcts.Core
 {
     public struct Board
     {
@@ -47,6 +49,17 @@
 
         public Move[] GetMoves()
         {
+            Bitboard moveMask = GetMovesMask();
+            Move[] moves = new Move[moveMask.PopCount()];
+            int i = 0;
+            foreach (var movePosition in moveMask.SetBits())
+                moves[i++] = new Move(movePosition);
+
+            return moves;
+        }
+
+        public Bitboard GetMovesMask()
+        {
             Bitboard movesToProve = _empty;
             Bitboard nonSuicides = new Bitboard();
 
@@ -54,32 +67,17 @@
             ProveConnectedToClosedLiberties(ref movesToProve, ref nonSuicides);
             ProveCapturesWithNoLiberties(ref movesToProve, ref nonSuicides);
 
-            int moveCount = nonSuicides.PopCount();
             // positions where there was own stone in the previous position but where we can also place a stone now
             Bitboard koDiff = _oldPBoard & nonSuicides;
-            Move koMove = Move.Pass();
             if (koDiff.PopCount() == 1)
             {
                 Bitboard captures = GetCapturedByMove(koDiff);
-
                 // if the position is not actually repeated
-                if ((_oBoard - captures) != _oldOBoard)
-                    koMove = new Move(koDiff, captures);
-                else
-                    moveCount--;
-
-                // either way, remove the move
-                nonSuicides = nonSuicides - koDiff;
+                if ((_oBoard - captures) == _oldOBoard)
+                    nonSuicides = nonSuicides - koDiff;
             }
 
-            Move[] moves = new Move[moveCount];
-            if (!koMove.IsPass)
-                moves[moveCount - 1] = koMove;
-            int i = 0;
-            foreach (var movePosition in nonSuicides.SetBits())
-                moves[i++] = new Move(movePosition);
-
-            return moves;
+            return nonSuicides;
         }
 
         private Bitboard GetCapturedByMove(Bitboard movePosition)

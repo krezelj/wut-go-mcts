@@ -5,6 +5,8 @@ namespace wut_go_mcts.Core
 {
     public struct Bitboard
     {
+        private static Random _rng = new Random(0);
+
         private const int N_BITS_BOT = 60;
         
         private const ulong MASK_BOT = 0x0FFBFEFFBFEFFBFE;
@@ -204,6 +206,15 @@ namespace wut_go_mcts.Core
         public bool Intersects(Bitboard other)
         {
             return ((_c0 & other._c0) != 0) | ((_c1 & other._c1) != 0);
+        }
+
+        public Bitboard GetRandomBit()
+        {
+            int i;
+            while (!IsBitSet(i = _rng.Next(81))) { }
+            Bitboard position = new Bitboard();
+            position.SetBit(i);
+            return position;
         }
 
         public override string ToString()
