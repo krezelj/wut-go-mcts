@@ -239,6 +239,12 @@ namespace wut_go_mcts.Core
             return copy;
         }
 
+        public Bitboard Floodfill(Bitboard open)
+        {
+            Bitboard floodfill = this;
+            while (floodfill.ExpandInplace(open)) { }
+            return floodfill;
+        }
 
         public override string ToString()
         {

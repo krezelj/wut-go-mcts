@@ -92,7 +92,7 @@
                 if (!(adjecentOpponent & checkedMask).IsEmpty())
                     continue; // the capture nature of this stone is already determined
 
-                Bitboard floodfill = Floodfill(adjecentOpponent, _oBoard);
+                Bitboard floodfill = adjecentOpponent.Floodfill(_oBoard);
                 if (floodfill.Expand(emptyAfterMove).IsEmpty()) // no liberties
                     captures |= floodfill;
                 checkedMask |= floodfill;
@@ -159,13 +159,6 @@
                     return true;
             }
             return false;
-        }
-
-        private Bitboard Floodfill(Bitboard b, Bitboard open)
-        {
-            Bitboard floodfill = b;
-            while (floodfill.ExpandInplace(open)) { }
-            return floodfill;
         }
 
         public void ApplyMove(Move move)
