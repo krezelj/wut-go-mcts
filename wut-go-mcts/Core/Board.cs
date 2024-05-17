@@ -1,4 +1,5 @@
 ﻿using System.Reflection.Metadata.Ecma335;
+using System.Threading.Tasks;
 
 namespace wut_go_mcts.Core
 {
@@ -186,15 +187,16 @@ namespace wut_go_mcts.Core
 
         public float Evaluate()
         {
-            int countDiff = _black.PopCount() - _white.PopCount();
+            float countDiff = (_black.PopCount() - _white.PopCount()) * 0.5f;
 
-            Bitboard mask = new Bitboard();
+            // Bitboard mask = new Bitboard();
             foreach (var position in _empty.SetBits())
             {
-                if (position.Intersects(mask))
-                    continue;
+                //if (position.Intersects(mask))
+                //    continue;
 
                 Bitboard floodfill = position.Floodfill(_empty);
+                // mask |= floodfill;
                 int floodfillCount = floodfill.PopCount();
                 floodfill.ExpandInplace(_full);
 
@@ -204,15 +206,40 @@ namespace wut_go_mcts.Core
                     countDiff -= floodfillCount;
             }
 
-            return countDiff == 0 ? 0 : (countDiff > 0 ? 1.0f : -1.0f);
-
+            return countDiff;
+            // return countDiff == 0 ? 0 : (countDiff > 0 ? 1.0f : -1.0f);
         }
 
         public override string ToString()
         {
             string columnIndicators = "--A-B-C-D-E-F-G-H-I--";
             string output = "";
+
+            var moveMask = GetMovesMask();
             var moves = GetMoves();
+            for (int i = 0; i < moves.Length; i++)
+            {
+                moves[i].Captures = GetCapturedByMove(moves[i].Position);
+                moves[i].CapturesCalculated = true;
+            }
+
+            Bitboard blackTerritory = new Bitboard();
+            Bitboard whiteTerritory = new Bitboard();
+            Bitboard mask = new Bitboard();
+            foreach (var position in _empty.SetBits())
+            {
+                if (position.Intersects(mask))
+                    continue;
+
+                Bitboard floodfill = position.Floodfill(_empty);
+
+                if (floodfill.Expand(_full).Intersects(_black) && !floodfill.Expand(_full).Intersects(_white))
+                    blackTerritory |= floodfill;
+                if (!floodfill.Expand(_full).Intersects(_black) && floodfill.Expand(_full).Intersects(_white))
+                    whiteTerritory |= floodfill;
+
+                mask |= floodfill;
+            }
 
             output += columnIndicators + '\n';
             for (int i = 80; i >= 0; i--)
@@ -223,9 +250,13 @@ namespace wut_go_mcts.Core
                     output += "X ";
                 else if (_white.IsBitSet(i))
                     output += "O ";
+                //else if (blackTerritory.IsBitSet(i))
+                //    output += "x ";
+                //else if (whiteTerritory.IsBitSet(i))
+                //    output += "o ";
                 else if (moves.ToList().FindAll(m => m.Position.IsBitSet(i) && !m.Captures.IsEmpty()).Count != 0)
                     output += "* ";
-                else if (moves.ToList().FindAll(m => m.Position.IsBitSet(i)).Count != 0)
+                else if (moveMask.IsBitSet(i))
                     output += "+ ";
                 else
                     output += ". ";
@@ -243,6 +274,8 @@ namespace wut_go_mcts.Core
             {
                 { 'X', ConsoleColor.Black },
                 { 'O', ConsoleColor.White },
+                { 'x', ConsoleColor.DarkGreen },
+                { 'o', ConsoleColor.DarkGreen },
                 { '+', ConsoleColor.Green },
                 { '.', ConsoleColor.DarkGray },
                 { '*', ConsoleColor.Red },
@@ -251,6 +284,8 @@ namespace wut_go_mcts.Core
             {
                 { 'X', ConsoleColor.White },
                 { 'O', ConsoleColor.Black },
+                { 'x', ConsoleColor.Red },
+                { 'o', ConsoleColor.Red },
                 { '+', ConsoleColor.Magenta },
                 { '.', ConsoleColor.White },
                 { '*', ConsoleColor.White },
@@ -277,8 +312,8 @@ namespace wut_go_mcts.Core
                        "........." +
                        "........." +
                        "........." +
-                       "........." +
-                       ".........";
+                       "OO.....XX" +
+                       ".O.....X.";
             Board board = new Board();
             for (int i = 0; i < s.Length; i++)
             {
