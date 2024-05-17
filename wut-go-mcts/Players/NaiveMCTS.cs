@@ -24,7 +24,7 @@ namespace wut_go_mcts.Players
 
             float[] rewards = new float[moves.Length];
 
-            int n_sims = 1000;
+            int n_sims = 300;
             sw.Start();
             for (int i = 0; i < moves.Length; i++)
             {
@@ -55,11 +55,15 @@ namespace wut_go_mcts.Players
                     board.Display();
                     Console.ReadKey();
                 }
-                var movesMask = board.GetMovesMask();
-                if (movesMask.PopCount() <= 1 || board.Pass)
-                    board.ApplyMove(Move.Pass());
-                else
-                    board.ApplyMove(new Move(movesMask.GetRandomBit()));
+
+                Bitboard allowedPositions = board.Empty;
+                Move m = board.GetRandomMove(ref allowedPositions);
+                board.ApplyMove(m);
+                //var movesMask = board.GetMovesMask();
+                //if (movesMask.PopCount() <= 1 || board.Pass)
+                //    board.ApplyMove(Move.Pass());
+                //else
+                //    board.ApplyMove(new Move(movesMask.GetRandomBit()));
 
             }
 

@@ -11,7 +11,7 @@ namespace wut_go_mcts.Core
         private Bitboard _white;
         private Bitboard _oldBlack;
         private Bitboard _oldWhite;
-        private Bitboard _empty;
+        public Bitboard Empty;
         private Bitboard _full => _black | _white;
         private Bitboard _pBoard => BlackToPlay ? _black : _white;
         private Bitboard _oBoard => BlackToPlay ? _white : _black;
@@ -29,7 +29,7 @@ namespace wut_go_mcts.Core
             _white = new Bitboard();
             _oldBlack = new Bitboard();
             _oldWhite = new Bitboard();
-            _empty = ~_black - _white;
+            Empty = ~_black - _white;
             _flags = 0;
         }
 
@@ -61,7 +61,7 @@ namespace wut_go_mcts.Core
 
         public Bitboard GetMovesMask()
         {
-            Bitboard movesToProve = _empty;
+            Bitboard movesToProve = Empty;
             Bitboard nonSuicides = new Bitboard();
 
             ProveConnectedToOpenLiberties(ref movesToProve, ref nonSuicides);
@@ -85,7 +85,7 @@ namespace wut_go_mcts.Core
         {
             Bitboard captures = new Bitboard();
             Bitboard checkedMask = new Bitboard();
-            Bitboard emptyAfterMove = _empty - movePosition;
+            Bitboard emptyAfterMove = Empty - movePosition;
             foreach (var adjecentOpponent in movePosition.GetNeighboursMask(_oBoard).SetBits())
             {
                 if (adjecentOpponent.Intersects(checkedMask))
@@ -102,20 +102,20 @@ namespace wut_go_mcts.Core
         private void ProveConnectedToOpenLiberties(ref Bitboard movesToProve, ref Bitboard proven)
         {
             Bitboard open = movesToProve | _pBoard;
-            Bitboard hasAccessToLiberty = _empty.GetNeighboursMask(_empty).Floodfill(open);
+            Bitboard hasAccessToLiberty = Empty.GetNeighboursMask(Empty).Floodfill(open);
             proven = proven | (movesToProve & hasAccessToLiberty);
             movesToProve -= proven;
         }
 
         private void ProveConnectedToClosedLiberties(ref Bitboard movesToProve, ref Bitboard proven)
         {
-            Bitboard open = _pBoard | _empty;
+            Bitboard open = _pBoard | Empty;
             foreach (var move in movesToProve.SetBits())
             {
                 if (move.Intersects(proven))
                     continue; // move already proven in a previous iteration
                 Bitboard floodfill = move.Floodfill(open);
-                if (floodfill.Intersects(_empty - move))
+                if (floodfill.Intersects(Empty - move))
                     proven = proven | (movesToProve & floodfill);
             }
             movesToProve -= proven;
@@ -125,7 +125,7 @@ namespace wut_go_mcts.Core
         {
             foreach (var move in movesToProve.SetBits())
             {
-                Bitboard newEmpty = _empty - move;
+                Bitboard newEmpty = Empty - move;
                 Bitboard open = _oBoard | newEmpty;
                 foreach (var adjecentOpponent in move.GetNeighboursMask(_oBoard).SetBits())
                 {
@@ -148,6 +148,44 @@ namespace wut_go_mcts.Core
                     return true;
             }
             return false;
+        }
+
+        public Move GetRandomMove(ref Bitboard allowedPositions)
+        {
+            bool koFound = false;
+            while (!allowedPositions.IsEmpty())
+            {
+                Bitboard position = allowedPositions.GetRandomBit();
+                if (!koFound && (_pBoard | position) == _oldPBoard)
+                {
+                    // potential ko
+                    Bitboard koCaptures = GetCapturedByMove(position);
+                    if ((_oBoard - koCaptures) == _oldOBoard)
+                    {
+                        // ko
+                        koFound = true;
+                        allowedPositions -= position;
+                        continue;
+                    }
+                }
+
+                // proven to not be ko
+
+                // does connect to liberty? if yes immediately return
+                Bitboard newEmpty = Empty - position;
+                Bitboard open = _pBoard | newEmpty;
+                if (ConnectsToLiberty(position, open, newEmpty))
+                    return new Move(position);
+
+                // if not check if capture
+                Bitboard captures = GetCapturedByMove(position);
+                if (!captures.IsEmpty())
+                    return new Move(position, captures);
+
+                // not a capture, try again
+                allowedPositions -= position;
+            }
+            return Move.Pass();
         }
 
         public void ApplyMove(Move move)
@@ -182,7 +220,7 @@ namespace wut_go_mcts.Core
                 _black = _black - move.Captures;
                 _flags = _flags & ~Flags.SideToPlay;
             }
-            _empty = ~_black - _white;
+            Empty = ~_black - _white;
         }
 
         public float Evaluate()
@@ -190,12 +228,12 @@ namespace wut_go_mcts.Core
             float countDiff = (_black.PopCount() - _white.PopCount()) * 0.5f;
 
             // Bitboard mask = new Bitboard();
-            foreach (var position in _empty.SetBits())
+            foreach (var position in Empty.SetBits())
             {
                 //if (position.Intersects(mask))
                 //    continue;
 
-                Bitboard floodfill = position.Floodfill(_empty);
+                Bitboard floodfill = position.Floodfill(Empty);
                 // mask |= floodfill;
                 int floodfillCount = floodfill.PopCount();
                 floodfill.ExpandInplace(_full);
@@ -226,12 +264,12 @@ namespace wut_go_mcts.Core
             Bitboard blackTerritory = new Bitboard();
             Bitboard whiteTerritory = new Bitboard();
             Bitboard mask = new Bitboard();
-            foreach (var position in _empty.SetBits())
+            foreach (var position in Empty.SetBits())
             {
                 if (position.Intersects(mask))
                     continue;
 
-                Bitboard floodfill = position.Floodfill(_empty);
+                Bitboard floodfill = position.Floodfill(Empty);
 
                 if (floodfill.Expand(_full).Intersects(_black) && !floodfill.Expand(_full).Intersects(_white))
                     blackTerritory |= floodfill;
