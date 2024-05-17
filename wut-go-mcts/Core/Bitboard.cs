@@ -149,22 +149,18 @@ namespace wut_go_mcts.Core
         public Bitboard[] SetBits()
         {
             Bitboard[] output = new Bitboard[PopCount()];
-            Bitboard placeholder = new Bitboard();
             Bitboard copy = this;
             int i = 0;
             while (copy._c0 != 0)
             {
-                placeholder._c0 = 1UL << BitOperations.TrailingZeroCount(copy._c0);
-                copy._c0 &= copy._c0 - 1;
-                output[i++] = placeholder;
+                output[i]._c0 = copy._c0 & ~(copy._c0 - 1);
+                copy._c0 ^= output[i++]._c0;
             }
-            placeholder._c0 = 0;
 
             while (copy._c1 != 0)
             {
-                placeholder._c1 = 1UL << BitOperations.TrailingZeroCount(copy._c1);
-                copy._c1 &= copy._c1 - 1;
-                output[i++] = placeholder;
+                output[i]._c1 = copy._c1 & ~(copy._c1 - 1);
+                copy._c1 ^= output[i++]._c1;
             }
             return output;
         }
