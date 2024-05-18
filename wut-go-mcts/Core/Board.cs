@@ -350,8 +350,8 @@ namespace wut_go_mcts.Core
                        "........." +
                        "........." +
                        "........." +
-                       "OO.....XX" +
-                       ".O.....X.";
+                       "........." +
+                       ".........";
             Board board = new Board();
             for (int i = 0; i < s.Length; i++)
             {

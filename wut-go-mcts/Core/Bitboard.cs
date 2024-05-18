@@ -206,11 +206,37 @@ namespace wut_go_mcts.Core
 
         public Bitboard GetRandomBit()
         {
-            int i;
-            while (!IsBitSet(i = _rng.Next(81))) { }
-            Bitboard position = new Bitboard();
-            position.SetBit(i);
-            return position;
+            //int i;
+            //while (!IsBitSet(i = _rng.Next(81))) { }
+            //Bitboard position = new Bitboard();
+            //position.SetBit(i);
+            //return position;
+
+            int c0PopCount = BitOperations.PopCount(_c0);
+            int c1PopCount = BitOperations.PopCount(_c1);
+            int r = _rng.Next(c0PopCount + c1PopCount);
+
+            if (r < c0PopCount)
+            {
+                ulong c = _c0;
+                for (int i = 0; i < r; i++)
+                    c &= c - 1;
+
+                Bitboard position = new Bitboard();
+                position._c0 = c & ~(c - 1);
+                return position;
+            }
+            else
+            {
+                r -= c0PopCount;
+                ulong c = _c1;
+                for (int i = 0; i < r; i++)
+                    c &= c - 1;
+
+                Bitboard position = new Bitboard();
+                position._c1 = c & ~(c - 1);
+                return position;
+            }
         }
 
         public override string ToString()

@@ -50,10 +50,10 @@ namespace wut_go_mcts.Players
             {
                 _nodes++;
                 depth++;
-                if (depth == 1000)
+                if (depth >= 1000)
                 {
                     board.Display();
-                    Console.ReadKey();
+                    Console.ReadLine();
                 }
 
                 Bitboard allowedPositions = board.Empty;

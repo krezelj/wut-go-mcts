@@ -12,10 +12,13 @@ namespace wut_go_mcts.Players
 
         public override Move Think(Board board)
         {
-            var movesMask = board.GetMovesMask();
-            if (board.Pass || movesMask.PopCount() <= 1)
-                return Move.Pass();
-            return new Move(movesMask.GetRandomBit());
+            //var movesMask = board.GetMovesMask();
+            //if (board.Pass || movesMask.PopCount() <= 1)
+            //    return Move.Pass();
+            //return new Move(movesMask.GetRandomBit());
+
+            Bitboard empty = board.Empty;
+            return board.GetRandomMove(ref empty);
         }
     }
 }
