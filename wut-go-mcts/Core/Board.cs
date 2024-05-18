@@ -5,12 +5,15 @@ namespace wut_go_mcts.Core
 {
     public struct Board
     {
+        private static Random _rng = new Random(0);
+
         public const int Size = 81;
         private Flags _flags;
         private Bitboard _black;
         private Bitboard _white;
         private Bitboard _oldBlack;
         private Bitboard _oldWhite;
+
         public Bitboard Empty;
         private Bitboard _full => _black | _white;
         private Bitboard _pBoard => BlackToPlay ? _black : _white;
@@ -39,6 +42,7 @@ namespace wut_go_mcts.Core
             _white = board._white;
             _oldBlack = board._oldBlack;
             _oldWhite = board._oldWhite;
+            Empty = board.Empty;
             _flags = board._flags;
         }
 
@@ -51,11 +55,11 @@ namespace wut_go_mcts.Core
         public Move[] GetMoves()
         {
             Bitboard moveMask = GetMovesMask();
-            Move[] moves = new Move[moveMask.PopCount()];
+            Move[] moves = new Move[moveMask.PopCount() + 1];
             int i = 0;
             foreach (var movePosition in moveMask.SetBits())
                 moves[i++] = new Move(movePosition);
-
+            moves[i] = Move.Pass();
             return moves;
         }
 
@@ -152,6 +156,14 @@ namespace wut_go_mcts.Core
 
         public Move GetRandomMove(ref Bitboard allowedPositions)
         {
+            int allowedCount = allowedPositions.PopCount();
+
+            // double allowedCount = allowedPositions.PopCount();
+            //if (_rng.NextDouble() < Math.Pow(allowedCount / 81, 3) * 0.2)
+            //    return Move.Pass();
+            if (allowedCount <= 5 && _rng.NextDouble() < 0.8)
+                return Move.Pass();
+
             bool koFound = false;
             while (!allowedPositions.IsEmpty())
             {
@@ -225,7 +237,7 @@ namespace wut_go_mcts.Core
 
         public float Evaluate()
         {
-            float countDiff = (_black.PopCount() - _white.PopCount()) * 0.5f;
+            float countDiff = (_black.PopCount() - _white.PopCount()) * 0f;
 
             // Bitboard mask = new Bitboard();
             foreach (var position in Empty.SetBits())
