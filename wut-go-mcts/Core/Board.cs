@@ -156,14 +156,6 @@ namespace wut_go_mcts.Core
 
         public Move GetRandomMove(ref Bitboard allowedPositions)
         {
-            int allowedCount = allowedPositions.PopCount();
-
-            // double allowedCount = allowedPositions.PopCount();
-            //if (_rng.NextDouble() < Math.Pow(allowedCount / 81, 3) * 0.2)
-            //    return Move.Pass();
-            if (allowedCount <= 5 && _rng.NextDouble() < 0.8)
-                return Move.Pass();
-
             bool koFound = false;
             while (!allowedPositions.IsEmpty())
             {
@@ -256,8 +248,8 @@ namespace wut_go_mcts.Core
                     countDiff -= floodfillCount;
             }
 
-            return countDiff;
-            // return countDiff == 0 ? 0 : (countDiff > 0 ? 1.0f : -1.0f);
+            countDiff -= 0.5f; // komi
+            return countDiff > 0 ? 1.0f : -1.0f;
         }
 
         public override string ToString()
