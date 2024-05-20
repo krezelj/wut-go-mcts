@@ -5,7 +5,7 @@ namespace wut_go_mcts.Core
 {
     public struct Bitboard
     {
-        private static Random _rng = new Random(0);
+        private static Random _rng = new Random(2);
 
         private const int N_BITS_BOT = 60;
         

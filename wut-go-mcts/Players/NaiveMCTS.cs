@@ -19,8 +19,8 @@ namespace wut_go_mcts.Players
             var sw = new Stopwatch();
 
             var moves = board.GetMoves();
-            if (board.Pass || moves.Length == 0)
-                return Move.Pass();
+            //if (board.Pass || moves.Length == 0)
+            //    return Move.Pass();
 
             float[] rewards = new float[moves.Length];
 

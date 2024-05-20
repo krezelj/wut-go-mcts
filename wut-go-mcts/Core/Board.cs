@@ -13,6 +13,8 @@ namespace wut_go_mcts.Core
         private Bitboard _white;
         private Bitboard _oldBlack;
         private Bitboard _oldWhite;
+        private int _capturedBlack;
+        private int _capturedWhite;
 
         public Bitboard Empty;
         private Bitboard _full => _black | _white;
@@ -34,6 +36,8 @@ namespace wut_go_mcts.Core
             _oldWhite = new Bitboard();
             Empty = ~_black - _white;
             _flags = 0;
+            _capturedBlack = 0;
+            _capturedWhite = 0;
         }
 
         public Board(Board board)
@@ -44,6 +48,8 @@ namespace wut_go_mcts.Core
             _oldWhite = board._oldWhite;
             Empty = board.Empty;
             _flags = board._flags;
+            _capturedBlack = board._capturedBlack;
+            _capturedWhite = board._capturedWhite;
         }
 
         public Board(Bitboard black, Bitboard white)
@@ -216,12 +222,14 @@ namespace wut_go_mcts.Core
             {
                 _black |= move.Position;
                 _white = _white - move.Captures;
+                _capturedWhite += move.Captures.PopCount();
                 _flags |= Flags.SideToPlay;
             }
             else
             {
                 _white |= move.Position;
                 _black = _black - move.Captures;
+                _capturedBlack += move.Captures.PopCount();
                 _flags = _flags & ~Flags.SideToPlay;
             }
             Empty = ~_black - _white;
@@ -229,7 +237,7 @@ namespace wut_go_mcts.Core
 
         public float Evaluate()
         {
-            float countDiff = (_black.PopCount() - _white.PopCount()) * 0f;
+            float countDiff = (_black.PopCount() - _white.PopCount() - _capturedBlack + _capturedWhite) * 1f;
 
             // Bitboard mask = new Bitboard();
             foreach (var position in Empty.SetBits())
@@ -305,7 +313,7 @@ namespace wut_go_mcts.Core
                 if (i % 9 == 0)
                     output += $"{i / 9 + 1} \n";
             }
-            output += columnIndicators;
+            output += columnIndicators + '\n';
 
             return output;
         }
@@ -321,6 +329,7 @@ namespace wut_go_mcts.Core
                 { '+', ConsoleColor.Green },
                 { '.', ConsoleColor.DarkGray },
                 { '*', ConsoleColor.Red },
+                { '\n', ConsoleColor.Black },
             };
             var fgcmap = new Dictionary<char, ConsoleColor>()
             {
