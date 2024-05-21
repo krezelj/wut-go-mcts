@@ -1,5 +1,5 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
+using System.Reflection;
 
 namespace wut_go_mcts.Core
 {
@@ -122,29 +122,24 @@ namespace wut_go_mcts.Core
                 + BitOperations.PopCount(_c1);
         }
 
-        //public int PopLSB()
-        //{
-        //    if (PopCount() == 0)
-        //        return 81;
-        //    int i = 0;
-        //    if (_c0 != 0)
-        //    {
-        //        i = BitOperations.TrailingZeroCount(_c0);
-        //        _c0 &= _c0 - 1;
-        //    }
-        //    else if (_c1 != 0)
-        //    {
-        //        i = BitOperations.TrailingZeroCount(_c1) + N_USEFUL_BITS;
-        //        _c1 &= _c1 - 1;
-        //    }
-        //    else if (_c2 != 0)
-        //    {
-        //        i = BitOperations.TrailingZeroCount(_c2) + 2 * N_USEFUL_BITS;
-        //        _c2 &= _c2 - 1;
-        //    }
-        //    i -= i / (BOARD_SIZE + 1) + 1;
-        //    return i;
-        //}
+        public bool PopLSB(out Bitboard lsb)
+        {
+            bool popped = false;
+            lsb = new Bitboard();
+            if (_c0 != 0)
+            {
+                lsb._c0 = _c0 & ~(_c0 - 1);
+                _c0 ^= lsb._c0;
+                popped = true;
+            }
+            else if (_c1 != 0)
+            {
+                lsb._c1 = _c1 & ~(_c1 - 1);
+                _c1 ^= lsb._c1;
+                popped = true;
+            }
+            return popped;
+        }
 
         public Bitboard[] SetBits()
         {
