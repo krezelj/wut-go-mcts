@@ -39,7 +39,7 @@ namespace wut_go_mcts.Players
             sw.Stop();
 
             float winProb = (rewards.Max() + n_sims) / (2 * n_sims);
-            Console.WriteLine($"Nodes: {_nodes} | kNPS: {(float)_nodes / sw.ElapsedMilliseconds} | {winProb}");
+            Console.WriteLine($"Nodes: {_nodes, -9} | MN/S: {Math.Round((float)_nodes / (1000 * sw.ElapsedMilliseconds), 2), -6} | {Math.Round(winProb, 2), -6}");
             return moves[rewards.ToList().IndexOf(rewards.Max())];
         }
 
