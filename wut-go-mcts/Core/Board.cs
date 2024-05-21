@@ -85,7 +85,7 @@ namespace wut_go_mcts.Core
                 Bitboard captures = GetCapturedByMove(koDiff);
                 // if the position is not actually repeated
                 if ((_oBoard - captures) == _oldOBoard)
-                    nonSuicides = nonSuicides - koDiff;
+                    nonSuicides.SubtractInplace(koDiff);
             }
 
             return nonSuicides;
@@ -122,12 +122,12 @@ namespace wut_go_mcts.Core
                     if (floodfill.Intersects(newEmpty))
                     {
                         libertyFound = true;
-                        adjecentOpponents -= floodfill;
+                        adjecentOpponents.SubtractInplace(floodfill);
                         break;
                     }
                 }
                 if (!libertyFound)
-                    captures = captures | (floodfill - newEmpty);
+                    captures.OrInplace(floodfill - newEmpty);
             }
             return captures;
         }
@@ -136,8 +136,8 @@ namespace wut_go_mcts.Core
         {
             Bitboard open = movesToProve | _pBoard;
             Bitboard hasAccessToLiberty = Empty.GetNeighboursMask(Empty).Floodfill(open);
-            proven = proven | (movesToProve & hasAccessToLiberty);
-            movesToProve -= proven;
+            proven.OrInplace(movesToProve & hasAccessToLiberty);
+            movesToProve.SubtractInplace(proven);
         }
 
         private void ProveConnectedToClosedLiberties(ref Bitboard movesToProve, ref Bitboard proven)
@@ -149,9 +149,9 @@ namespace wut_go_mcts.Core
                     continue; // move already proven in a previous iteration
                 Bitboard floodfill = move.Floodfill(open);
                 if (floodfill.Intersects(Empty - move))
-                    proven = proven | (movesToProve & floodfill);
+                    proven .OrInplace(movesToProve & floodfill);
             }
-            movesToProve -= proven;
+            movesToProve.SubtractInplace(proven);
         }
 
         private void ProveCapturesWithNoLiberties(ref Bitboard movesToProve, ref Bitboard proven)
@@ -164,8 +164,8 @@ namespace wut_go_mcts.Core
                 {
                     if (!ConnectsToLiberty(adjecentOpponent, open, newEmpty))
                     {
-                        proven |= move;
-                        movesToProve = movesToProve - move;
+                        proven.OrInplace(move);
+                        movesToProve.SubtractInplace(move); // TODO Move subtraction until the end of the function
                         break;
                     }
                 }
@@ -197,7 +197,7 @@ namespace wut_go_mcts.Core
                     {
                         // ko
                         koFound = true;
-                        allowedPositions -= position;
+                        allowedPositions.SubtractInplace(position);
                         continue;
                     }
                 }
@@ -216,7 +216,7 @@ namespace wut_go_mcts.Core
                     return new Move(position, captures);
 
                 // not a capture, try again
-                allowedPositions -= position;
+                allowedPositions.SubtractInplace(position);
             }
             return Move.Pass();
         }
@@ -243,15 +243,15 @@ namespace wut_go_mcts.Core
 
             if (BlackToPlay)
             {
-                _black |= move.Position;
-                _white = _white - move.Captures;
+                _black.OrInplace(move.Position);
+                _white.SubtractInplace(move.Captures);
                 _capturedWhite += move.Captures.PopCount();
                 _flags |= Flags.SideToPlay;
             }
             else
             {
-                _white |= move.Position;
-                _black = _black - move.Captures;
+                _white.OrInplace(move.Position);
+                _black.SubtractInplace(move.Captures);
                 _capturedBlack += move.Captures.PopCount();
                 _flags = _flags & ~Flags.SideToPlay;
             }
@@ -275,13 +275,13 @@ namespace wut_go_mcts.Core
                 bool intersectsWithWhite = floodfill.Intersects(_white);
                 if (intersectsWithBlack && !intersectsWithWhite)
                 {
-                    blackTerritory |= floodfill;
-                    toVisit -= floodfill;
+                    blackTerritory.OrInplace(floodfill);
+                    toVisit.SubtractInplace(floodfill);
                 }
                 else if (intersectsWithWhite && !intersectsWithBlack)
                 {
-                    whiteTerritory |= floodfill;
-                    toVisit -= floodfill;
+                    whiteTerritory.OrInplace(floodfill);
+                    toVisit.SubtractInplace(floodfill);
                 }
                 else // neutral territory, get the closest colour
                 {
@@ -347,11 +347,11 @@ namespace wut_go_mcts.Core
                 Bitboard floodfill = position.Floodfill(Empty);
 
                 if (floodfill.Expand(_full).Intersects(_black) && !floodfill.Expand(_full).Intersects(_white))
-                    blackTerritory |= floodfill;
+                    blackTerritory.OrInplace(floodfill);
                 if (!floodfill.Expand(_full).Intersects(_black) && floodfill.Expand(_full).Intersects(_white))
-                    whiteTerritory |= floodfill;
+                    whiteTerritory.OrInplace(floodfill);
 
-                mask |= floodfill;
+                mask.OrInplace(floodfill);
             }
 
             output += columnIndicators + '\n';

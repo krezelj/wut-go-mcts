@@ -64,6 +64,18 @@ namespace wut_go_mcts.Core
             return c;
         }
 
+        public void SubtractInplace(Bitboard other)
+        {
+            _c0 = _c0 & ~(other._c0 & MASK_BOT);
+            _c1 = _c1 & ~(other._c1 & MASK_TOP);
+        }
+
+        public void OrInplace(Bitboard other)
+        {
+            _c0 |= other._c0;
+            _c1 |= other._c1;
+        }
+
         public static bool operator ==(Bitboard a, Bitboard b)
         {
             return a._c0 == b._c0
