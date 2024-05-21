@@ -93,18 +93,41 @@ namespace wut_go_mcts.Core
 
         private Bitboard GetCapturedByMove(Bitboard movePosition)
         {
-            Bitboard captures = new Bitboard();
-            Bitboard checkedMask = new Bitboard();
-            Bitboard emptyAfterMove = Empty - movePosition;
-            foreach (var adjecentOpponent in movePosition.GetNeighboursMask(_oBoard).SetBits())
-            {
-                if (adjecentOpponent.Intersects(checkedMask))
-                    continue; // the capture nature of this stone is already determined
+            //Bitboard captures = new Bitboard();
+            //Bitboard checkedMask = new Bitboard();
+            //Bitboard emptyAfterMove = Empty - movePosition;
+            //foreach (var adjecentOpponent in movePosition.GetNeighboursMask(_oBoard).SetBits())
+            //{
+            //    if (adjecentOpponent.Intersects(checkedMask))
+            //        continue; // the capture nature of this stone is already determined
 
-                Bitboard floodfill = adjecentOpponent.Floodfill(_oBoard);
-                if (floodfill.Expand(emptyAfterMove).IsEmpty()) // no liberties
-                    captures |= floodfill;
-                checkedMask |= floodfill;
+            //    Bitboard floodfill = adjecentOpponent.Floodfill(_oBoard);
+            //    if (floodfill.Expand(emptyAfterMove).IsEmpty()) // no liberties
+            //        captures |= floodfill;
+            //    checkedMask |= floodfill;
+            //}
+            //return captures;
+
+            Bitboard captures = new Bitboard();
+            Bitboard newEmpty = Empty - movePosition;
+            Bitboard open = newEmpty | _oBoard;
+            Bitboard adjecentOpponents = movePosition.GetNeighboursMask(_oBoard);
+            Bitboard adjecentOpponent;
+            while (adjecentOpponents.PopLSB(out adjecentOpponent))
+            {
+                Bitboard floodfill = adjecentOpponent;
+                bool libertyFound = false;
+                while (floodfill.ExpandInplace(open))
+                {
+                    if (floodfill.Intersects(newEmpty))
+                    {
+                        libertyFound = true;
+                        adjecentOpponents -= floodfill;
+                        break;
+                    }
+                }
+                if (!libertyFound)
+                    captures = captures | (floodfill - newEmpty);
             }
             return captures;
         }
