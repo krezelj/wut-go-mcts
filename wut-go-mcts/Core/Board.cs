@@ -237,24 +237,64 @@ namespace wut_go_mcts.Core
 
         public float Evaluate()
         {
-            float countDiff = (_black.PopCount() - _white.PopCount() - _capturedBlack + _capturedWhite) * 1f;
+            float countDiff = (_black.PopCount() - _white.PopCount()) * 1f;
+            countDiff += _capturedWhite - _capturedBlack;
 
-            // Bitboard mask = new Bitboard();
-            foreach (var position in Empty.SetBits())
+            Bitboard blackTerritory = new Bitboard();
+            Bitboard whiteTerritory = new Bitboard();
+            Bitboard toVisit = Empty;
+            Bitboard position;
+
+            while (toVisit.PopLSB(out position))
             {
-                //if (position.Intersects(mask))
-                //    continue;
-
                 Bitboard floodfill = position.Floodfill(Empty);
-                // mask |= floodfill;
-                int floodfillCount = floodfill.PopCount();
-                floodfill.ExpandInplace(_full);
-
-                if (floodfill.Intersects(_black))
-                    countDiff += floodfillCount;
-                if (floodfill.Intersects(_white))
-                    countDiff -= floodfillCount;
+                bool intersectsWithBlack = floodfill.Intersects(_black);
+                bool intersectsWithWhite = floodfill.Intersects(_white);
+                if (intersectsWithBlack && !intersectsWithWhite)
+                {
+                    blackTerritory |= floodfill;
+                    toVisit -= floodfill;
+                }
+                else if (intersectsWithWhite && !intersectsWithBlack)
+                {
+                    whiteTerritory |= floodfill;
+                    toVisit -= floodfill;
+                }
+                else // neutral territory, get the closest colour
+                {
+                    floodfill = position;
+                    bool closestFound = false;
+                    while (floodfill.ExpandInplace(Empty))
+                    {
+                        if (floodfill.Intersects(_black))
+                        {
+                            countDiff += 1f;
+                            closestFound = true;
+                        }
+                        if (floodfill.Intersects(_white))
+                        {
+                            countDiff -= 1f;
+                            closestFound = true;
+                        }
+                        if (closestFound)
+                            break;
+                    }
+                }
             }
+
+            countDiff += blackTerritory.PopCount() - whiteTerritory.PopCount();
+
+            //foreach (var position in Empty.SetBits())
+            //{
+            //    Bitboard floodfill = position.Floodfill(Empty);
+            //    int floodfillCount = floodfill.PopCount();
+            //    floodfill.ExpandInplace(_full);
+
+            //    if (floodfill.Intersects(_black))
+            //        countDiff += floodfillCount;
+            //    if (floodfill.Intersects(_white))
+            //        countDiff -= floodfillCount;
+            //}
 
             countDiff -= 0.5f; // komi
             return countDiff > 0 ? 1.0f : -1.0f;
