@@ -271,6 +271,7 @@ namespace wut_go_mcts.Core
             while (toVisit.PopLSB(out position))
             {
                 Bitboard floodfill = position.Floodfill(Empty);
+                floodfill.ExpandInplace();
                 bool intersectsWithBlack = floodfill.Intersects(_black);
                 bool intersectsWithWhite = floodfill.Intersects(_white);
                 if (intersectsWithBlack && !intersectsWithWhite)
@@ -286,39 +287,23 @@ namespace wut_go_mcts.Core
                 else // neutral territory, get the closest colour
                 {
                     floodfill = position;
-                    bool closestFound = false;
-                    while (floodfill.ExpandInplace(Empty))
+                    while (floodfill.ExpandInplace())
                     {
                         if (floodfill.Intersects(_black))
                         {
                             countDiff += 1f;
-                            closestFound = true;
+                            break;
                         }
                         if (floodfill.Intersects(_white))
                         {
                             countDiff -= 1f;
-                            closestFound = true;
-                        }
-                        if (closestFound)
                             break;
+                        }
                     }
                 }
             }
 
             countDiff += blackTerritory.PopCount() - whiteTerritory.PopCount();
-
-            //foreach (var position in Empty.SetBits())
-            //{
-            //    Bitboard floodfill = position.Floodfill(Empty);
-            //    int floodfillCount = floodfill.PopCount();
-            //    floodfill.ExpandInplace(_full);
-
-            //    if (floodfill.Intersects(_black))
-            //        countDiff += floodfillCount;
-            //    if (floodfill.Intersects(_white))
-            //        countDiff -= floodfillCount;
-            //}
-
             countDiff -= 0.5f; // komi
             return countDiff > 0 ? 1.0f : -1.0f;
         }
@@ -338,20 +323,42 @@ namespace wut_go_mcts.Core
 
             Bitboard blackTerritory = new Bitboard();
             Bitboard whiteTerritory = new Bitboard();
-            Bitboard mask = new Bitboard();
-            foreach (var position in Empty.SetBits())
+            Bitboard toVisit = Empty;
+            Bitboard position;
+
+            while (toVisit.PopLSB(out position))
             {
-                if (position.Intersects(mask))
-                    continue;
-
                 Bitboard floodfill = position.Floodfill(Empty);
-
-                if (floodfill.Expand(_full).Intersects(_black) && !floodfill.Expand(_full).Intersects(_white))
+                floodfill.ExpandInplace(_full | Empty);
+                bool intersectsWithBlack = floodfill.Intersects(_black);
+                bool intersectsWithWhite = floodfill.Intersects(_white);
+                if (intersectsWithBlack && !intersectsWithWhite)
+                {
                     blackTerritory.OrInplace(floodfill);
-                if (!floodfill.Expand(_full).Intersects(_black) && floodfill.Expand(_full).Intersects(_white))
+                    toVisit.SubtractInplace(floodfill);
+                }
+                else if (intersectsWithWhite && !intersectsWithBlack)
+                {
                     whiteTerritory.OrInplace(floodfill);
-
-                mask.OrInplace(floodfill);
+                    toVisit.SubtractInplace(floodfill);
+                }
+                else // neutral territory, get the closest colour
+                {
+                    floodfill = position;
+                    bool closestFound = false;
+                    while (floodfill.ExpandInplace(Empty | _full))
+                    {
+                        bool blackFound = floodfill.Intersects(_black);
+                        bool whiteFound = floodfill.Intersects(_white);
+                        closestFound = blackFound || whiteFound;
+                        if (blackFound && !whiteFound)
+                            blackTerritory |= position;
+                        if (!blackFound && whiteFound)
+                            whiteTerritory |= position;
+                        if (closestFound)
+                            break;
+                    }
+                }
             }
 
             output += columnIndicators + '\n';
@@ -363,10 +370,10 @@ namespace wut_go_mcts.Core
                     output += "X ";
                 else if (_white.IsBitSet(i))
                     output += "O ";
-                //else if (blackTerritory.IsBitSet(i))
-                //    output += "x ";
-                //else if (whiteTerritory.IsBitSet(i))
-                //    output += "o ";
+                else if (blackTerritory.IsBitSet(i))
+                    output += "x ";
+                else if (whiteTerritory.IsBitSet(i))
+                    output += "o ";
                 else if (moves.ToList().FindAll(m => m.Position.IsBitSet(i) && !m.Captures.IsEmpty()).Count != 0)
                     output += "* ";
                 else if (moveMask.IsBitSet(i))
@@ -387,10 +394,10 @@ namespace wut_go_mcts.Core
             {
                 { 'X', ConsoleColor.Black },
                 { 'O', ConsoleColor.White },
-                { 'x', ConsoleColor.DarkGreen },
-                { 'o', ConsoleColor.DarkGreen },
+                { 'x', ConsoleColor.DarkGray },
+                { 'o', ConsoleColor.Gray },
                 { '+', ConsoleColor.Green },
-                { '.', ConsoleColor.DarkGray },
+                { '.', ConsoleColor.Magenta },
                 { '*', ConsoleColor.Red },
                 { '\n', ConsoleColor.Black },
             };
@@ -398,8 +405,8 @@ namespace wut_go_mcts.Core
             {
                 { 'X', ConsoleColor.White },
                 { 'O', ConsoleColor.Black },
-                { 'x', ConsoleColor.Red },
-                { 'o', ConsoleColor.Red },
+                { 'x', ConsoleColor.White },
+                { 'o', ConsoleColor.White },
                 { '+', ConsoleColor.Magenta },
                 { '.', ConsoleColor.White },
                 { '*', ConsoleColor.White },

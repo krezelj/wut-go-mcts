@@ -180,13 +180,24 @@ namespace wut_go_mcts.Core
             return copy;
         }
 
+        public bool ExpandInplace()
+        {
+            ulong old_c0 = _c0;
+            ulong old_c1 = _c1;
+
+            _c0 = (_c0 | (_c0 << 1) | (_c0 >> 1) | (_c0 >> 10) | (_c0 << 10) | (_c1 << 50)) & MASK_BOT;
+            _c1 = (_c1 | (_c1 << 1) | (_c1 >> 1) | (_c1 >> 10) | (_c1 << 10) | (old_c0 >> 50)) & MASK_TOP;
+
+            return old_c0 != _c0 || old_c1 != _c1;
+        }
+
         public bool ExpandInplace(Bitboard mask)
         {
             ulong old_c0 = _c0;
             ulong old_c1 = _c1;
 
             _c0 = (_c0 | (_c0 << 1) | (_c0 >> 1) | (_c0 >> 10) | (_c0 << 10) | (_c1 << 50)) & MASK_BOT & mask._c0;
-            _c1 = (_c1 | (_c1 << 1) | (_c1 >> 1) | (_c1 >> 10) | (_c1 << 10) | (_c0 >> 50)) & MASK_TOP & mask._c1;
+            _c1 = (_c1 | (_c1 << 1) | (_c1 >> 1) | (_c1 >> 10) | (_c1 << 10) | (old_c0 >> 50)) & MASK_TOP & mask._c1;
 
             return old_c0 != _c0 || old_c1 != _c1;
         }
