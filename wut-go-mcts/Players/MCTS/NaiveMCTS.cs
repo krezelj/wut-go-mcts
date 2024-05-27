@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using wut_go_mcts.Core;
 
-namespace wut_go_mcts.Players
+namespace wut_go_mcts.Players.MCTS
 {
     public class NaiveMCTS : Player
     {
@@ -39,7 +39,7 @@ namespace wut_go_mcts.Players
             sw.Stop();
 
             float winProb = (rewards.Max() + n_sims) / (2 * n_sims);
-            Console.WriteLine($"Nodes: {_nodes, -9} | MN/S: {Math.Round((float)_nodes / (1000 * sw.ElapsedMilliseconds), 2), -6} | {Math.Round(winProb, 2), -6}");
+            Console.WriteLine($"Nodes: {_nodes,-9} | MN/S: {Math.Round((float)_nodes / (1000 * sw.ElapsedMilliseconds), 2),-6} | {Math.Round(winProb, 2),-6}");
             return moves[rewards.ToList().IndexOf(rewards.Max())];
         }
 
@@ -63,7 +63,7 @@ namespace wut_go_mcts.Players
                 else if (allowedCount <= 10 && _rng.NextDouble() < 0.8)
                     board.ApplyMove(Move.Pass()); // randomly decide that only the current player passed
                 else
-                    board.ApplyMove(board.GetRandomMove(ref allowedPositions));                
+                    board.ApplyMove(board.GetRandomMove(ref allowedPositions));
             }
 
             _nodes++;
