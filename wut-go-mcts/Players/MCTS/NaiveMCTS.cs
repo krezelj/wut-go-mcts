@@ -15,6 +15,8 @@ namespace wut_go_mcts.Players.MCTS
 
         public override Move Think(Board board)
         {
+            // throw new NotImplementedException(); // change evaluate handling to 1 - 0
+
             _nodes = 0;
             var sw = new Stopwatch();
 
@@ -24,7 +26,7 @@ namespace wut_go_mcts.Players.MCTS
 
             float[] rewards = new float[moves.Length];
 
-            int n_sims = 2000;
+            int n_sims = 125;
             sw.Start();
             for (int i = 0; i < moves.Length; i++)
             {
@@ -33,12 +35,15 @@ namespace wut_go_mcts.Players.MCTS
                 {
                     Board copy = new Board(board);
                     copy.ApplyMove(move);
-                    rewards[i] += (board.BlackToPlay ? 1.0f : -1.0f) * Simulate(copy);
+                    float value = Simulate(copy);
+                    if (!board.BlackToPlay)
+                        value = 1.0f - value;
+                    rewards[i] += value;
                 }
             }
             sw.Stop();
 
-            float winProb = (rewards.Max() + n_sims) / (2 * n_sims);
+            float winProb = rewards.Max() / n_sims;
             Console.WriteLine($"Nodes: {_nodes,-9} | MN/S: {Math.Round((float)_nodes / (1000 * sw.ElapsedMilliseconds), 2),-6} | {Math.Round(winProb, 2),-6}");
             return moves[rewards.ToList().IndexOf(rewards.Max())];
         }

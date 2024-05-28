@@ -305,7 +305,7 @@ namespace wut_go_mcts.Core
 
             countDiff += blackTerritory.PopCount() - whiteTerritory.PopCount();
             countDiff -= 0.5f; // komi
-            return countDiff > 0 ? 1.0f : -1.0f;
+            return countDiff > 0 ? 1.0f : 0f;
         }
 
         public override string ToString()
@@ -426,15 +426,15 @@ namespace wut_go_mcts.Core
 
         public static Board GetFromString()
         {
-            string s = "........." +
-                       "........." +
-                       "........." +
-                       "........." +
-                       "........." +
-                       "........." +
-                       "........." +
-                       "........." +
-                       ".........";
+            string s = "OOOO..OOO" +
+                       "OOOOOOOOO" +
+                       "OOOOOOOOO" +
+                       "OOOOOOOOO" +
+                       "OOOOOOOOO" +
+                       "OOOOOOOOO" +
+                       "OOOOOOOOO" +
+                       "OOOOOOOOO" +
+                       "O.OOOOO.O";
             Board board = new Board();
             for (int i = 0; i < s.Length; i++)
             {
@@ -448,6 +448,7 @@ namespace wut_go_mcts.Core
                         break;
                 }
             }
+            board.Empty = ~board._black - board._white;
             return board;
         }
     }
