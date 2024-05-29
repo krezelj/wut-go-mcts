@@ -26,7 +26,7 @@ namespace wut_go_mcts.Players.MCTS
                 // expand?
                 if (current.VisitCount == 2 && !current.Terminal)
                 {
-                    current.Expand();
+                    // current.Expand();
                     current = current.GetBestChild(UCB);
                     current.VisitCount++;
                 }

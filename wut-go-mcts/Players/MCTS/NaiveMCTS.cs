@@ -7,7 +7,7 @@ namespace wut_go_mcts.Players.MCTS
     {
         public override Move Think(Board board)
         {
-            int MAX_ITERS = 100_000;
+            int MAX_ITERS = 1_000_000;
             var sw = new Stopwatch();
             sw.Start();
 
