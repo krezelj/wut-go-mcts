@@ -63,9 +63,10 @@ namespace wut_go_mcts.Core
             Bitboard moveMask = GetMovesMask();
             Move[] moves = new Move[moveMask.PopCount() + 1];
             int i = 0;
+            moves[i++] = Move.Pass();
             foreach (var movePosition in moveMask.SetBits())
                 moves[i++] = new Move(movePosition);
-            moves[i] = Move.Pass();
+            // moves[i] = Move.Pass();
             return moves;
         }
 
@@ -450,6 +451,26 @@ namespace wut_go_mcts.Core
             }
             board.Empty = ~board._black - board._white;
             return board;
+        }
+
+        public static bool operator ==(Board a, Board b)
+        {
+            if (a._black != b._black)
+                return false;
+            if (a._white != b._white)
+                return false;
+            if (a._oldBlack != b._oldBlack)
+                return false;
+            if (a._oldWhite != b._oldWhite)
+                return false;
+            if (a.BlackToPlay != b.BlackToPlay)
+                return false;
+            return true;
+        }
+
+        public static bool operator !=(Board a, Board b)
+        {
+            return !(a == b);
         }
     }
 }

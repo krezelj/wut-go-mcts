@@ -11,7 +11,11 @@ namespace wut_go_mcts.Players.MCTS
 {
     public class UCT : MCTS
     {
-        public UCT(Func<TreeNode, float> estimator) : base(estimator) { }
+        private bool _keepRoot;
+        public UCT(Func<TreeNode, float> estimator, bool keepRoot) : base(estimator) 
+        {
+            _keepRoot = keepRoot;
+        }
 
         public override Move Think(Board board, Timer timer)
         {
@@ -21,7 +25,7 @@ namespace wut_go_mcts.Players.MCTS
             var sw = new Stopwatch();
             sw.Start();
 
-            InitThink(board);
+            InitThink(board, _keepRoot);
             for (int iter = 0; iter < MAX_ITERS; iter++)
             {
                 if (timer.MilisecondsElapsedThisTurn >= timeLimit)
@@ -54,12 +58,13 @@ namespace wut_go_mcts.Players.MCTS
             // TODO optimise this
             Move[] moves = board.GetMoves();
             int bestIdx = _root.GetBestChildIndex((TreeNode n) => n.VisitCount + (n.ValueSum / n.VisitCount));
-            sw.Stop();
-
             float winProb = _root.Children[bestIdx].ValueSum / _root.Children[bestIdx].VisitCount;
+            if (_keepRoot)
+                _root = _root.Children[bestIdx];
 
             //Console.WriteLine($"Nodes: {_nodes,-9} | MN/S: {Math.Round((float)_nodes / (1000 * sw.ElapsedMilliseconds), 2),-6} | {Math.Round(winProb, 2),-6} | {timer.MilisecondsElapsedThisTurn,-4}");
 
+            sw.Stop();
             if (winProb < 0.01)
                 return Move.Pass(); // resign
             return moves[bestIdx];

@@ -10,10 +10,29 @@ namespace wut_go_mcts.Players.MCTS
         protected TreeNode _root;
         protected Func<TreeNode, float> _estimator;
 
-        protected void InitThink(Board board)
+        protected void InitThink(Board board, bool keepRoot = false)
         {
             _nodes = 0;
-            _root = new TreeNode(board);
+            if (!keepRoot || _root == null)
+                _root = new TreeNode(board);
+
+            bool newRootFound = false;
+            if (keepRoot && _root.Children != null)
+            {
+                // find the child of current root that matches the current state of the board
+                foreach (var child in _root.Children)
+                {
+                    if (child != null && child.Board == board)
+                    {
+                        _root = child;
+                        newRootFound = true;
+                        break;
+                    }
+                }
+            }
+            if (keepRoot && !newRootFound)
+                _root = new TreeNode(board);
+
             _root.Expand();
         }
 
