@@ -1,12 +1,9 @@
 ﻿using System.Numerics;
-using System.Reflection;
 
 namespace wut_go_mcts.Core
 {
     public struct Bitboard
     {
-        private static Random _rng = new Random(2);
-
         private const int N_BITS_BOT = 60;
         
         private const ulong MASK_BOT = 0x0FFBFEFFBFEFFBFE;
@@ -232,7 +229,7 @@ namespace wut_go_mcts.Core
 
             int c0PopCount = BitOperations.PopCount(_c0);
             int c1PopCount = BitOperations.PopCount(_c1);
-            int r = _rng.Next(c0PopCount + c1PopCount);
+            int r = RNG.Generator.Next(c0PopCount + c1PopCount);
 
             if (r < c0PopCount)
             {
