@@ -11,7 +11,7 @@ namespace wut_go_mcts.Players
             _thinkCallback = thinkCallback;
         }
 
-        public override Move Think(Board board)
+        public override Move Think(Board board, Timer timer)
         {
             return _thinkCallback(board);
         }

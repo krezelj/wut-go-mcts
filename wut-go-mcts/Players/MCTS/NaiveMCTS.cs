@@ -5,9 +5,11 @@ namespace wut_go_mcts.Players.MCTS
 {
     public class NaiveMCTS : MCTS
     {
-        public override Move Think(Board board)
+        public override Move Think(Board board, Timer timer)
         {
-            int MAX_ITERS = 1_000_000;
+            float timeLimit = timer.MilisecondsRemaining / 30.0f;
+
+            int MAX_ITERS = 100_000;
             var sw = new Stopwatch();
             sw.Start();
 
@@ -15,6 +17,9 @@ namespace wut_go_mcts.Players.MCTS
             int childIdx = 0;
             for (int iter = 0; iter < MAX_ITERS; iter++)
             {
+                if (timer.MilisecondsElapsedThisTurn >= timeLimit)
+                    break;
+
                 childIdx %= _root.Children.Length;
                 TreeNode current = _root.Children[childIdx++];
                 current.VisitCount++;
@@ -32,8 +37,10 @@ namespace wut_go_mcts.Players.MCTS
             sw.Stop();
 
             float winProb = _root.Children[bestIdx].ValueSum / _root.Children[bestIdx].VisitCount;
-            Console.WriteLine($"Nodes: {_nodes,-9} | MN/S: {Math.Round((float)_nodes / (1000 * sw.ElapsedMilliseconds), 2),-6} | {Math.Round(winProb, 2),-6}");
+            Console.WriteLine($"Nodes: {_nodes,-9} | MN/S: {Math.Round((float)_nodes / (1000 * sw.ElapsedMilliseconds), 2),-6} | {Math.Round(winProb, 2),-6} | {timer.MilisecondsElapsedThisTurn,-4}");
 
+            if (winProb < 0.01)
+                return Move.Pass(); // resign
             return moves[bestIdx];
         }
     }
