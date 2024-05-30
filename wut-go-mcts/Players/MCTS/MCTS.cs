@@ -8,12 +8,18 @@ namespace wut_go_mcts.Players.MCTS
     {
         protected long _nodes;
         protected TreeNode _root;
+        protected Func<TreeNode, float> _estimator;
 
         protected void InitThink(Board board)
         {
             _nodes = 0;
             _root = new TreeNode(board);
             _root.Expand();
+        }
+
+        public MCTS(Func<TreeNode, float> estimator)
+        {
+            _estimator = estimator;
         }
 
         protected TreeNode Select()
@@ -23,7 +29,7 @@ namespace wut_go_mcts.Players.MCTS
             {
                 _nodes++;
                 current.VisitCount++;
-                current = current.GetBestChild(UCB);
+                current = current.GetBestChild(_estimator);
             }
             current.VisitCount++;
             return current;
@@ -56,13 +62,38 @@ namespace wut_go_mcts.Players.MCTS
             return value;
         }
 
-        protected static float UCB(TreeNode node)
+        public static float UCB(TreeNode node)
         {
             if (node.VisitCount == 0)
                 return float.MaxValue;
 
-            float ucb = node.ValueSum / node.VisitCount + 2 * MathF.Sqrt(MathF.Log(node.Parent.VisitCount) / node.VisitCount);
+            float ucb = node.ValueSum / node.VisitCount + MathF.Sqrt(2 * MathF.Log(node.Parent.VisitCount) / node.VisitCount);
             return ucb;
+        }
+
+        public static float UCBTuned(TreeNode node)
+        {
+            if (node.VisitCount == 0)
+                return float.MaxValue;
+
+            float mean = node.ValueSum / node.VisitCount;
+            float var = mean - mean * mean;
+            float V = var + MathF.Sqrt(2 * MathF.Log(node.Parent.VisitCount) / node.VisitCount);
+
+            float ucb1tuned = mean + MathF.Sqrt(MathF.Min(0.25f, V) * MathF.Log(node.Parent.VisitCount) / node.VisitCount);
+            return ucb1tuned;
+        }
+
+        public static float MOSS(TreeNode node)
+        {
+            if (node.VisitCount == 0)
+                return float.MaxValue;
+
+            int k = node.Children == null ? node.MoveMask.PopCount() + 1 : node.Children.Length;
+            float V = MathF.Log(node.Parent.VisitCount / (k * node.VisitCount));
+
+            float moss = node.ValueSum / node.VisitCount + MathF.Sqrt(2 * MathF.Max(0, V) / node.VisitCount);
+            return moss;
         }
     }
 }

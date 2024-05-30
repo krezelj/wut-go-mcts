@@ -67,6 +67,10 @@ namespace wut_go_mcts.Players.MCTS
             for (int i = 0; i < Children.Length; i++)
             {
                 float value = estimator(Children[i]);
+                if (value == float.MaxValue)
+                {
+                    return i;
+                }
                 if (value > maxValue)
                 {
                     maxValue = value;
@@ -79,6 +83,27 @@ namespace wut_go_mcts.Players.MCTS
         public void Expand()
         {
             Expanded = true;
+            //int moveCount = MoveMask.PopCount() + 1;
+
+            //if (Children == null)
+            //{    
+            //    Children = new TreeNode[moveCount];
+            //    Board newBoard = new Board(Board);
+            //    newBoard.ApplyMove(Move.Pass());
+            //    Children[PopulatedChildren++] = new TreeNode(newBoard, this);
+            //}
+            //if (moveCount > 0)
+            //{
+            //    Board newBoard;
+            //    foreach (var movePosition in MoveMask.SetBits())
+            //    {
+            //        Move move = new Move(movePosition);
+            //        newBoard = new Board(Board);
+            //        newBoard.ApplyMove(move);
+            //        Children[PopulatedChildren++] = new TreeNode(newBoard, this);
+            //    }
+            //}
+
             MoveMask = new Bitboard();
             Move[] moves = Board.GetMoves();
             Children = new TreeNode[moves.Length];
