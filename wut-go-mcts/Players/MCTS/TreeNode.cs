@@ -41,6 +41,7 @@ namespace wut_go_mcts.Players.MCTS
         {
             if (Children == null)
             {
+                throw new Exception();
                 Children = new TreeNode[MoveMask.PopCount() + 1];
 
                 Board newBoard = new Board(Board);
@@ -52,6 +53,7 @@ namespace wut_go_mcts.Players.MCTS
 
             if (MoveMask.PopCount() > 0)
             {
+                throw new Exception();
                 Move move = new Move(MoveMask.GetRandomBit());
                 MoveMask.SubtractInplace(move.Position);
 

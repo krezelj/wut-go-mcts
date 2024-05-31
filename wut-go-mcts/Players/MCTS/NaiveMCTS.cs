@@ -35,7 +35,11 @@ namespace wut_go_mcts.Players.MCTS
             // return most visited/best value
             // TODO optimise this
             Move[] moves = board.GetMoves();
-            int bestIdx = _root.GetBestChildIndex((TreeNode n) => n.ValueSum / n.VisitCount);
+            int bestIdx = _root.GetBestChildIndex((TreeNode n) => {
+                if (n.Board.Pass && !n.Board.Finished)
+                    return float.MinValue;
+                return n.VisitCount + (n.ValueSum / n.VisitCount);
+            });
             sw.Stop();
 
             float winProb = _root.Children[bestIdx].ValueSum / _root.Children[bestIdx].VisitCount;

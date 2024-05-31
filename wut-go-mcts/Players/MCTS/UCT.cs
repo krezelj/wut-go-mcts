@@ -37,7 +37,7 @@ namespace wut_go_mcts.Players.MCTS
                 // expand?
                 if (current.VisitCount == 2 && !current.Terminal)
                 {
-                    // current.Expand();
+                    current.Expand();
                     current = current.GetBestChild(_estimator);
                     current.VisitCount++;
                 }
@@ -57,7 +57,12 @@ namespace wut_go_mcts.Players.MCTS
             // return most visited/best value
             // TODO optimise this
             Move[] moves = board.GetMoves();
-            int bestIdx = _root.GetBestChildIndex((TreeNode n) => n.VisitCount + (n.ValueSum / n.VisitCount));
+            int bestIdx = _root.GetBestChildIndex((TreeNode n) => {
+                if (n.Board.Pass && !n.Board.Finished)
+                    return float.MinValue;
+                return n.VisitCount + (n.ValueSum / n.VisitCount);
+            });
+            
             float winProb = _root.Children[bestIdx].ValueSum / _root.Children[bestIdx].VisitCount;
             if (_keepRoot)
                 _root = _root.Children[bestIdx];
