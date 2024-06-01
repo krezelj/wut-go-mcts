@@ -38,7 +38,7 @@ namespace wut_go_mcts.Players.MCTS
             int bestIdx = _root.GetBestChildIndex((TreeNode n) => {
                 if (n.Board.Pass && !n.Board.Finished)
                     return float.MinValue;
-                return n.VisitCount + (n.ValueSum / n.VisitCount);
+                return n.ValueSum / n.VisitCount;
             });
             sw.Stop();
 
