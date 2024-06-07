@@ -21,20 +21,42 @@ namespace wut_go_mcts
             _board = board;
         }
 
-        public void Play()
+        public (float score, string verdict) Play()
         {
+            float score;
+            string verdict;
+
+            Timer p1Timer = new Timer(4000, 0);
+            Timer p2Timer = new Timer(4000, 0);
+
             bool blackToPlay = true;
             while (!_board.Finished)
             {
-                // TODO - for now assume Think always results in a legal move
                 Player currentPlayer = blackToPlay ? _blackPlayer : _whitePlayer;
+                Timer currentTimer = blackToPlay ? p1Timer : p2Timer;
 
-                var move = currentPlayer.Think(_board);
+                currentTimer.StartTurn();
+                var move = currentPlayer.Think(_board, currentTimer);
+                if (currentTimer.StopTurn())
+                {
+                    score = blackToPlay ? 0.0f : 1.0f;
+                    verdict = String.Format(
+                        "{0} Wins. {1} exceeded time limit.", blackToPlay ? "White" : "Black", blackToPlay ? "Black" : "White");
+                    return (score, verdict);
+                }
+
+
                 _board.ApplyMove(move);
                 blackToPlay = !blackToPlay;
-            }
 
-            throw new NotImplementedException();
+                // Console.Clear();
+                // _board.Display();
+            }
+            // Thread.Sleep(1000);
+            // _board.Display();
+            score = _board.Evaluate();
+            verdict = String.Format("{0} Wins.", score == 0.0f ? "White" : "Black");
+            return (score, verdict);
         }
     }
 }
